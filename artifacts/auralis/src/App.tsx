@@ -17,19 +17,8 @@ type Song = {
 type Playlist = { id: string; name: string; songs: string[]; accent: string };
 type LibraryView = 'queue' | 'library';
 
-const songs: Song[] = [
-  { id: 's1', title: 'A New Language', artist: 'Kiasmos', album: 'Blurred', duration: 284, genre: 'Neo-classical', year: '2024', coverA: '#0d4f58', coverB: '#7ce0d5', favorite: true },
-  { id: 's2', title: 'Narrow Road', artist: 'Daughter', album: 'Stereo Mind', duration: 231, genre: 'Indie electronic', year: '2023', coverA: '#31375f', coverB: '#e39b78' },
-  { id: 's3', title: 'In This Together', artist: 'Rival Consoles', album: 'Overflow', duration: 317, genre: 'Electronica', year: '2022', coverA: '#1b5f4f', coverB: '#e9c46a', favorite: true },
-  { id: 's4', title: 'Slow Light', artist: 'Julianna Barwick', album: 'Healing Is A Miracle', duration: 256, genre: 'Ambient', year: '2020', coverA: '#392659', coverB: '#b5e2fa' },
-  { id: 's5', title: 'Pacific 202', artist: 'Tycho', album: 'Weather', duration: 271, genre: 'Downtempo', year: '2019', coverA: '#164e63', coverB: '#f59e0b' },
-  { id: 's6', title: 'The Last Bloom', artist: 'Ólafur Arnalds', album: 'Some Kind of Peace', duration: 198, genre: 'Modern classical', year: '2020', coverA: '#684447', coverB: '#d9a441' },
-  { id: 's7', title: 'Open Eye Signal', artist: 'Jon Hopkins', album: 'Immunity', duration: 514, genre: 'Techno', year: '2013', coverA: '#182b49', coverB: '#3dd6d0' },
-  { id: 's8', title: 'Night Drive', artist: 'Chromatics', album: 'Kill For Love', duration: 327, genre: 'Dream pop', year: '2012', coverA: '#5c1830', coverB: '#f0a6ca' },
-  { id: 's9', title: 'Falling Apart', artist: 'Khruangbin', album: 'Con Todo El Mundo', duration: 242, genre: 'Psychedelic soul', year: '2018', coverA: '#42523b', coverB: '#ef8354' },
-];
-
-const defaultSongs: Song[] = [...songs, ...requestedSongSeeds];
+const placeholderSongIds = new Set(['s1', 's2', 's3', 's4', 's5', 's6', 's7', 's8', 's9']);
+const defaultSongs: Song[] = requestedSongSeeds;
 const initialPlaylists: Playlist[] = [
   { id: 'p1', name: 'All songs', songs: defaultSongs.map((s) => s.id), accent: '#36d6c3' },
   { id: 'p2', name: 'Favorites', songs: defaultSongs.filter((s) => s.favorite).map((s) => s.id), accent: '#f2b66d' },
@@ -42,18 +31,24 @@ const readStorage = <T,>(key: string, fallback: T): T => {
 };
 const readSongs = (): Song[] => {
   const stored = readStorage<Song[]>('auralis-songs', []);
-  const storedById = new Map(stored.map((song) => [song.id, song]));
+  const cleanedStored = stored.filter((song) => !placeholderSongIds.has(song.id));
+  const storedById = new Map(cleanedStored.map((song) => [song.id, song]));
   return defaultSongs.map((song) => storedById.get(song.id) || song).concat(
-    stored.filter((song) => !defaultSongs.some((defaultSong) => defaultSong.id === song.id)),
+    cleanedStored.filter((song) => !defaultSongs.some((defaultSong) => defaultSong.id === song.id)),
   );
 };
 const readPlaylists = (): Playlist[] => {
   const stored = readStorage<Playlist[]>('auralis-playlists', initialPlaylists);
-  const byId = new Map(stored.filter((playlist) => playlist.id === 'p1' || playlist.id === 'p2').map((playlist) => [playlist.id, playlist]));
   const storedSongs = readSongs();
+  const validSongIds = new Set(storedSongs.map((song) => song.id));
+  const customPlaylists = stored.filter((playlist) => playlist.id !== 'p1' && playlist.id !== 'p2').map((playlist) => ({
+    ...playlist,
+    songs: playlist.songs.filter((songId) => validSongIds.has(songId)),
+  }));
   return [
-    { ...(byId.get('p1') || initialPlaylists[0]), songs: storedSongs.map((song) => song.id) },
-    { ...(byId.get('p2') || initialPlaylists[1]), songs: storedSongs.filter((song) => song.favorite).map((song) => song.id) },
+    { ...initialPlaylists[0], songs: storedSongs.map((song) => song.id) },
+    { ...initialPlaylists[1], songs: storedSongs.filter((song) => song.favorite).map((song) => song.id) },
+    ...customPlaylists,
   ];
 };
 const fileToDataUrl = (file: File): Promise<string> => new Promise((resolve, reject) => {
@@ -75,6 +70,38 @@ function Cover({ song, size = 'md', className = '' }: { song?: Song; size?: 'sm'
       style={{ '--cover-a': song.coverA, '--cover-b': song.coverB } as CSSProperties} data-testid={`cover-${song.id}`}>
       <span className="cover-line" /><span className="cover-mark" />
       <span className="absolute bottom-4 left-4 z-[1] text-[9px] font-mono-custom tracking-[.25em] text-white/70">{song.album.toUpperCase()}</span>
+    </div>
+  );
+}
+
+function PlaylistPicker({ song, playlists, open, onToggle, onOpenChange }: {
+  song: Song;
+  playlists: Playlist[];
+  open: boolean;
+  onToggle: (playlistId: string) => void;
+  onOpenChange: (open: boolean) => void;
+}) {
+  const selected = new Set(playlists.filter((playlist) => playlist.id !== 'p1' && playlist.songs.includes(song.id)).map((playlist) => playlist.id));
+  if (song.favorite) selected.add('p2');
+  const selectedCount = selected.size;
+  return (
+    <div className="relative" onPointerDown={(event) => event.stopPropagation()}>
+      <button type="button" onClick={() => onOpenChange(!open)} className="rounded-lg border border-white/10 bg-[#0b171a] px-2 py-2 text-[10px] text-white/60 transition hover:border-primary/40 hover:text-white" aria-label={`Change playlists for ${song.title}`} aria-expanded={open} data-testid={`button-song-playlists-${song.id}`}>
+        {selectedCount ? `${selectedCount} playlist${selectedCount === 1 ? '' : 's'}` : 'Add to playlist'}
+      </button>
+      {open && <div className="absolute right-0 top-full z-20 mt-2 w-44 rounded-xl border border-white/10 bg-[#0b171a] p-2 shadow-2xl" role="group" aria-label={`Playlists for ${song.title}`}>
+        <p className="px-2 pb-2 text-[9px] uppercase tracking-[.14em] text-white/30">Add to playlists</p>
+        <div className="flex items-center gap-2 rounded-lg px-2 py-2 text-[11px] text-white/35">
+          <Check size={13} className="text-primary" /> All songs
+        </div>
+        {playlists.filter((playlist) => playlist.id !== 'p1').map((playlist) => {
+          const isSelected = selected.has(playlist.id);
+          return <button type="button" key={playlist.id} onClick={() => onToggle(playlist.id)} className={`flex w-full items-center gap-2 rounded-lg px-2 py-2 text-left text-[11px] transition ${isSelected ? 'bg-primary/[.12] text-primary' : 'text-white/60 hover:bg-white/[.06] hover:text-white'}`} aria-pressed={isSelected} data-testid={`button-toggle-playlist-${song.id}-${playlist.id}`}>
+            <span className={`flex h-4 w-4 items-center justify-center rounded border ${isSelected ? 'border-primary bg-primary text-primary-foreground' : 'border-white/20'}`}>{isSelected && <Check size={11} />}</span>
+            <span className="truncate">{playlist.name}</span>
+          </button>;
+        })}
+      </div>}
     </div>
   );
 }
@@ -110,6 +137,7 @@ function App() {
   const [selectedFile, setSelectedFile] = useState<File | null>(null);
   const [draggingSongId, setDraggingSongId] = useState<string | null>(null);
   const [dragOverSongId, setDragOverSongId] = useState<string | null>(null);
+  const [playlistMenuSongId, setPlaylistMenuSongId] = useState<string | null>(null);
   const fileRef = useRef<HTMLInputElement>(null);
   const editAudioRef = useRef<HTMLInputElement>(null);
   const editCoverRef = useRef<HTMLInputElement>(null);
@@ -118,7 +146,6 @@ function App() {
 
   const current = localSongs.find((song) => song.id === currentId) || localSongs[0];
   const active = playlists.find((playlist) => playlist.id === activePlaylist) || playlists[0];
-  const playlistForSong = (songId: string, favorite?: boolean) => playlists.find((playlist) => playlist.id !== 'p1' && playlist.songs.includes(songId))?.id || (favorite ? 'p2' : 'p1');
   const baseQueue = useMemo(() => {
     const playlistSongs = active?.songs.map((id) => localSongs.find((song) => song.id === id)).filter(Boolean) as Song[] || localSongs;
     const filtered = playlistSongs.filter((song) => `${song.title} ${song.artist} ${song.album}`.toLowerCase().includes(query.toLowerCase()));
@@ -283,14 +310,19 @@ function App() {
     setPlaylists(remaining); setActivePlaylist(remaining[0]?.id || 'p1'); setDeleteTarget(null); setToast('Playlist deleted');
   };
   const removeFromPlaylist = (songId: string) => setPlaylists((items) => items.map((item) => item.id === activePlaylist ? { ...item, songs: item.songs.filter((id) => id !== songId) } : item));
-  const assignSongToPlaylist = (songId: string, playlistId: string) => {
+  const toggleSongPlaylist = (songId: string, playlistId: string) => {
+    if (playlistId === 'p1') return;
     setPlaylists((items) => items.map((playlist) => {
       if (playlist.id === 'p1') return { ...playlist, songs: playlist.songs.includes(songId) ? playlist.songs : [...playlist.songs, songId] };
-      if (playlist.id === playlistId) return { ...playlist, songs: [...new Set([...playlist.songs, songId])] };
-      return { ...playlist, songs: playlist.songs.filter((id) => id !== songId) };
+      if (playlist.id !== playlistId) return playlist;
+      return playlist.songs.includes(songId)
+        ? { ...playlist, songs: playlist.songs.filter((id) => id !== songId) }
+        : { ...playlist, songs: [...playlist.songs, songId] };
     }));
-    setLocalSongs((items) => items.map((song) => song.id === songId ? { ...song, favorite: playlistId === 'p2' } : song));
-    setToast(playlistId === 'p2' ? 'Added to Favorites' : 'Removed from Favorites');
+    if (playlistId === 'p2') {
+      const isFavorite = playlists.find((playlist) => playlist.id === 'p2')?.songs.includes(songId) || false;
+      setLocalSongs((items) => items.map((song) => song.id === songId ? { ...song, favorite: !isFavorite } : song));
+    }
   };
   const openSongEditor = (song: Song) => {
     setEditSongTarget(song);
@@ -388,7 +420,7 @@ function App() {
               <div className="mt-6 flex items-center justify-between"><span className="font-mono-custom text-[10px] uppercase tracking-[.15em] text-white/35">{queue.length} tracks</span><div className="flex items-center gap-2"><button onClick={shuffleAndPlay} className="flex items-center gap-1 rounded-full border border-primary/30 bg-primary/[.08] px-3 py-2 text-xs text-primary transition hover:bg-primary/[.14]" data-testid="button-shuffle-play"><Shuffle size={13} /> Shuffle &amp; Play</button><button onClick={() => { setEditMode((value) => !value); setQuery(''); setSort('recent'); }} className={`flex items-center gap-1 text-xs ${editMode ? 'text-primary' : 'text-white/40'}`} data-testid="button-edit-mode"><Edit3 size={13} /> {editMode ? 'Done' : 'Edit'}</button><select value={sort} onChange={(event) => setSort(event.target.value as typeof sort)} className="bg-transparent text-xs text-white/45 outline-none" aria-label="Sort tracks" data-testid="select-sort"><option value="recent" className="bg-[#071114]">Recent</option><option value="title" className="bg-[#071114]">Title</option><option value="artist" className="bg-[#071114]">Artist</option></select></div></div>
              {editMode && <p className="mt-3 text-[10px] text-primary/60">{query || sort !== 'recent' ? 'Use the recent order to rearrange tracks.' : 'Press and hold a track, then drag it into a new position.'}</p>}
            </>}
-            <div className="mt-4 space-y-1">{queue.length ? queue.map((song) => <div key={song.id} data-drag-song-id={song.id} onPointerDown={(event) => beginSongDrag(event, song.id)} className={`select-none touch-pan-y group flex items-center gap-3 rounded-xl border-t-2 p-2 transition hover:bg-white/[.04] ${song.id === current?.id ? 'bg-white/[.05]' : ''} ${draggingSongId === song.id ? 'scale-[.98] bg-primary/[.12] shadow-lg' : ''} ${dragOverSongId === song.id && draggingSongId !== song.id ? 'border-primary' : 'border-transparent'}`}><button className="flex min-w-0 flex-1 items-center gap-3 text-left" onClick={() => { if (suppressClickRef.current) return; chooseSong(song); setLibraryOpen(false); }} data-testid={`button-library-song-${song.id}`}><Cover song={song} size="sm" /><span className="min-w-0 flex-1"><span className={`block truncate text-sm ${song.id === current?.id ? 'text-primary' : 'text-white/80'}`}>{song.title}</span><span className="mt-0.5 block truncate text-xs text-white/35">{song.artist}</span></span><span className="font-mono-custom text-[10px] text-white/25">{formatTime(song.duration)}</span></button>{editMode && <div className="flex shrink-0 items-center gap-1"><select value={playlistForSong(song.id, song.favorite)} onChange={(event) => assignSongToPlaylist(song.id, event.target.value)} className="max-w-[112px] rounded-lg border border-white/10 bg-[#0b171a] px-2 py-2 text-[10px] text-white/60 outline-none focus:border-primary/60" aria-label={`Playlist for ${song.title}`} data-testid={`select-song-playlist-${song.id}`}><option value="p1">All songs</option><option value="p2">Favorites</option>{playlists.filter((playlist) => playlist.id !== 'p1' && playlist.id !== 'p2').map((playlist) => <option key={playlist.id} value={playlist.id}>{playlist.name}</option>)}</select><button onClick={() => openSongEditor(song)} className="rounded-lg p-2 text-white/35 transition hover:bg-white/10 hover:text-primary" aria-label={`Edit ${song.title}`} data-testid={`button-edit-song-${song.id}`}><Settings size={15} /></button>{activePlaylist !== 'p1' && <button onClick={() => removeFromPlaylist(song.id)} className="rounded-lg p-2 text-white/30 hover:text-red-300" aria-label={`Remove ${song.title}`} data-testid={`button-remove-song-${song.id}`}><Trash2 size={15} /></button>}</div>}</div>) : <div className="rounded-2xl border border-dashed border-white/10 px-5 py-10 text-center"><ListMusic className="mx-auto text-white/25" size={28} /><p className="mt-3 text-sm text-white/50">Nothing here yet</p><p className="mt-1 text-xs text-white/30">Add tracks to this playlist from your collection.</p></div>}</div>
+            <div className="mt-4 space-y-1">{queue.length ? queue.map((song) => <div key={song.id} data-drag-song-id={song.id} onPointerDown={(event) => beginSongDrag(event, song.id)} className={`select-none touch-pan-y group flex items-center gap-3 rounded-xl border-t-2 p-2 transition hover:bg-white/[.04] ${song.id === current?.id ? 'bg-white/[.05]' : ''} ${draggingSongId === song.id ? 'scale-[.98] bg-primary/[.12] shadow-lg' : ''} ${dragOverSongId === song.id && draggingSongId !== song.id ? 'border-primary' : 'border-transparent'}`}><button className="flex min-w-0 flex-1 items-center gap-3 text-left" onClick={() => { if (suppressClickRef.current) return; chooseSong(song); setLibraryOpen(false); }} data-testid={`button-library-song-${song.id}`}><Cover song={song} size="sm" /><span className="min-w-0 flex-1"><span className={`block truncate text-sm ${song.id === current?.id ? 'text-primary' : 'text-white/80'}`}>{song.title}</span><span className="mt-0.5 block truncate text-xs text-white/35">{song.artist}</span></span><span className="font-mono-custom text-[10px] text-white/25">{formatTime(song.duration)}</span></button>{editMode && <div className="flex shrink-0 items-center gap-1"><PlaylistPicker song={song} playlists={playlists} open={playlistMenuSongId === song.id} onOpenChange={(open) => setPlaylistMenuSongId(open ? song.id : null)} onToggle={(playlistId) => toggleSongPlaylist(song.id, playlistId)} /><button onClick={() => openSongEditor(song)} className="rounded-lg p-2 text-white/35 transition hover:bg-white/10 hover:text-primary" aria-label={`Edit ${song.title}`} data-testid={`button-edit-song-${song.id}`}><Settings size={15} /></button>{activePlaylist !== 'p1' && <button onClick={() => removeFromPlaylist(song.id)} className="rounded-lg p-2 text-white/30 hover:text-red-300" aria-label={`Remove ${song.title}`} data-testid={`button-remove-song-${song.id}`}><Trash2 size={15} /></button>}</div>}</div>) : <div className="rounded-2xl border border-dashed border-white/10 px-5 py-10 text-center"><ListMusic className="mx-auto text-white/25" size={28} /><p className="mt-3 text-sm text-white/50">Nothing here yet</p><p className="mt-1 text-xs text-white/30">Add tracks to this playlist from your collection.</p></div>}</div>
         </div>
       </section>
 
