@@ -104,11 +104,16 @@ function App() {
   useEffect(() => {
     if (!isPlaying || !current) return;
     const timer = window.setInterval(() => setProgress((value) => {
-      if (value >= current.duration) { setCurrentId(next?.id || current.id); return 0; }
+       if (value >= current.duration) {
+         if (repeat) { setCurrentId(current.id); return 0; }
+         if (next) { setCurrentId(next.id); return 0; }
+         setIsPlaying(false);
+         return value;
+       }
       return value + 1;
     }), 1000);
     return () => window.clearInterval(timer);
-  }, [isPlaying, current, next]);
+   }, [isPlaying, current, next, repeat]);
   useEffect(() => { if (!toast) return; const timer = window.setTimeout(() => setToast(''), 2400); return () => window.clearTimeout(timer); }, [toast]);
   useEffect(() => {
     if (!draggingSongId) return;
@@ -314,7 +319,7 @@ function App() {
          </div>
         <div className="flex-1 overflow-y-auto px-6 py-6">
            {libraryView === 'library' && <div className="relative"><Search className="absolute left-3 top-1/2 -translate-y-1/2 text-white/30" size={16} /><input value={query} onChange={(event) => setQuery(event.target.value)} placeholder="Search your music" className="w-full rounded-xl border border-white/10 bg-white/[.04] py-3 pl-10 pr-4 text-sm text-white outline-none placeholder:text-white/30 focus:border-primary/60" aria-label="Search music" data-testid="input-search" /></div>}
-           {libraryView === 'queue' && <div className="mb-5"><p className="font-mono-custom text-[10px] uppercase tracking-[.15em] text-primary">Up next</p><p className="mt-2 text-sm text-white/45">The next songs in your current playlist</p></div>}
+            {libraryView === 'queue' && <div className="mb-5"><div className="flex items-start justify-between gap-4"><div><p className="font-mono-custom text-[10px] uppercase tracking-[.15em] text-primary">Up next</p><p className="mt-2 text-sm text-white/45">The next songs in your current playlist</p></div><div className="flex shrink-0 gap-2"><button onClick={toggleShuffle} className={`flex items-center gap-1.5 rounded-full border px-3 py-2 text-xs transition ${shuffle ? 'border-primary/40 bg-primary/[.12] text-primary' : 'border-white/10 bg-white/[.04] text-white/55 hover:border-white/20 hover:text-white'}`} aria-label={shuffle ? 'Restore playlist order' : 'Shuffle queue'} data-testid="button-queue-shuffle"><Shuffle size={13} /> Shuffle</button><button onClick={() => setRepeat((value) => !value)} className={`flex items-center gap-1.5 rounded-full border px-3 py-2 text-xs transition ${repeat ? 'border-primary/40 bg-primary/[.12] text-primary' : 'border-white/10 bg-white/[.04] text-white/55 hover:border-white/20 hover:text-white'}`} aria-label={repeat ? 'Turn loop off' : 'Turn loop on'} data-testid="button-queue-loop"><Repeat size={13} /> Loop</button></div></div></div>}
            {libraryView === 'library' && <>
              <div className="mt-6 flex items-center justify-between"><div className="flex gap-1 overflow-x-auto pb-1">{playlists.map((playlist) => <button key={playlist.id} onClick={() => setActivePlaylist(playlist.id)} className={`whitespace-nowrap rounded-full px-3 py-2 text-xs transition ${activePlaylist === playlist.id ? 'bg-primary text-primary-foreground' : 'bg-white/[.05] text-white/55 hover:text-white'}`} data-testid={`button-playlist-${playlist.id}`}>{playlist.name}</button>)}</div><div className="ml-2 flex shrink-0 gap-1"><button onClick={() => setAddPlaylistOpen(true)} className="rounded-full border border-white/10 p-2 text-primary" aria-label="Add playlist" data-testid="button-add-playlist"><Plus size={16} /></button>{editMode && activePlaylist !== 'p1' && <button onClick={() => setDeleteTarget(active)} className="rounded-full border border-white/10 p-2 text-red-300/70 hover:text-red-300" aria-label="Delete playlist" data-testid="button-delete-playlist"><Trash2 size={15} /></button>}</div></div>
               <div className="mt-6 flex items-center justify-between"><span className="font-mono-custom text-[10px] uppercase tracking-[.15em] text-white/35">{queue.length} tracks</span><div className="flex items-center gap-2"><button onClick={shuffleAndPlay} className="flex items-center gap-1 rounded-full border border-primary/30 bg-primary/[.08] px-3 py-2 text-xs text-primary transition hover:bg-primary/[.14]" data-testid="button-shuffle-play"><Shuffle size={13} /> Shuffle &amp; Play</button><button onClick={() => { setEditMode((value) => !value); setQuery(''); setSort('recent'); }} className={`flex items-center gap-1 text-xs ${editMode ? 'text-primary' : 'text-white/40'}`} data-testid="button-edit-mode"><Edit3 size={13} /> {editMode ? 'Done' : 'Edit'}</button><select value={sort} onChange={(event) => setSort(event.target.value as typeof sort)} className="bg-transparent text-xs text-white/45 outline-none" aria-label="Sort tracks" data-testid="select-sort"><option value="recent" className="bg-[#071114]">Recent</option><option value="title" className="bg-[#071114]">Title</option><option value="artist" className="bg-[#071114]">Artist</option></select></div></div>
