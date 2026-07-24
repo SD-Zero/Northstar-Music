@@ -271,7 +271,7 @@ function App() {
         </div>
       </header>
 
-      <main className="relative z-10 mx-auto max-w-[1380px] px-5 pb-32 md:px-10 lg:pb-14">
+       <main className="relative z-10 mx-auto max-w-[1380px] px-5 pb-32 md:px-10 lg:pb-32 xl:pb-14">
         <section className="min-w-0">
           <div className="mt-0 flex items-end justify-between">
             <div className="rise-in"><p className="mb-3 text-[10px] font-mono-custom uppercase tracking-[.24em] text-primary">Now playing</p></div>
@@ -306,7 +306,7 @@ function App() {
 
       </main>
 
-      <div className="fixed bottom-0 left-0 right-0 z-30 border-t border-white/[.08] bg-[#101d22]/90 px-5 py-3 backdrop-blur-xl lg:hidden safe-bottom"><div className="mx-auto flex max-w-xl items-center gap-3"><Cover song={current} size="sm" /><div className="min-w-0 flex-1"><p className="truncate text-sm text-white">{current?.title}</p><p className="truncate text-xs text-white/40">{current?.artist}</p></div><button onClick={() => setIsPlaying(!isPlaying)} className="flex h-10 w-10 items-center justify-center rounded-full bg-primary text-primary-foreground" aria-label={isPlaying ? 'Pause' : 'Play'} data-testid="button-mobile-play">{isPlaying ? <Pause size={17} fill="currentColor" /> : <Play size={17} fill="currentColor" />}</button></div></div>
+       <div className="fixed bottom-0 left-0 right-0 z-30 border-t border-white/[.08] bg-[#101d22]/90 px-5 py-3 backdrop-blur-xl xl:hidden safe-bottom"><div className="mx-auto flex max-w-xl items-center gap-3"><Cover song={current} size="sm" /><div className="min-w-0 flex-1"><p className="truncate text-sm text-white">{current?.title}</p><p className="truncate text-xs text-white/40">{current?.artist}</p></div><button onClick={() => setIsPlaying(!isPlaying)} className="flex h-10 w-10 items-center justify-center rounded-full bg-primary text-primary-foreground" aria-label={isPlaying ? 'Pause' : 'Play'} data-testid="button-mobile-play">{isPlaying ? <Pause size={17} fill="currentColor" /> : <Play size={17} fill="currentColor" />}</button></div></div>
       <button className={`fixed inset-0 z-40 bg-black/50 transition-opacity duration-300 ${libraryOpen ? 'opacity-100' : 'pointer-events-none opacity-0'}`} onClick={() => setLibraryOpen(false)} aria-label="Close library overlay" data-testid="button-close-overlay" />
         <section className={`fixed right-0 top-0 z-50 flex h-full w-full max-w-[470px] flex-col border-l border-white/10 bg-[#071114] shadow-[-18px_0_60px_rgba(0,0,0,.5)] transition-transform duration-500 ${libraryOpen ? 'translate-x-0' : 'translate-x-full'}`}>
          <div className="border-b border-white/[.08] px-6 py-5">
