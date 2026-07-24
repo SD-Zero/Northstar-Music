@@ -113,6 +113,8 @@ button:focus-visible, input:focus-visible { outline: 2px solid hsl(var(--primary
   position: relative;
   overflow: hidden;
   isolation: isolate;
+  flex-shrink: 0;
+  aspect-ratio: 1 / 1;
   background: linear-gradient(135deg, var(--cover-a), var(--cover-b));
 }
 .cover-art::before, .cover-art::after {

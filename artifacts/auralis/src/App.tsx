@@ -14,6 +14,7 @@ type Song = {
   genre: string; year: string; coverA: string; coverB: string; favorite?: boolean;
 };
 type Playlist = { id: string; name: string; songs: string[]; accent: string };
+type LibraryView = 'queue' | 'library';
 
 const songs: Song[] = [
   { id: 's1', title: 'A New Language', artist: 'Kiasmos', album: 'Blurred', duration: 284, genre: 'Neo-classical', year: '2024', coverA: '#0d4f58', coverB: '#7ce0d5', favorite: true },
@@ -58,6 +59,7 @@ function App() {
   const [isPlaying, setIsPlaying] = useState(false);
   const [progress, setProgress] = useState(38);
   const [libraryOpen, setLibraryOpen] = useState(false);
+  const [libraryView, setLibraryView] = useState<LibraryView>('library');
   const [query, setQuery] = useState('');
   const [sort, setSort] = useState<'recent' | 'title' | 'artist'>('recent');
   const [editMode, setEditMode] = useState(false);
@@ -145,6 +147,10 @@ function App() {
   }, [activePlaylist, dragOverSongId, draggingSongId]);
 
   const chooseSong = (song: Song) => { setCurrentId(song.id); setProgress(0); setIsPlaying(true); };
+  const openLibraryView = (view: LibraryView) => {
+    setLibraryView(view);
+    setLibraryOpen(true);
+  };
   const move = (direction: number) => {
     const target = direction < 0 ? previous : next;
     if (target) chooseSong(target);
@@ -194,7 +200,11 @@ function App() {
         </div>
         <div className="flex items-center gap-2">
           <span className="hidden items-center gap-2 rounded-full border border-white/10 bg-white/[.03] px-3 py-2 text-[10px] font-mono-custom text-white/45 md:flex"><span className="h-1.5 w-1.5 rounded-full bg-primary shadow-[0_0_12px_rgba(54,214,195,.8)]" /> LOCAL MODE</span>
-          <button className="flex h-11 w-11 items-center justify-center rounded-2xl border border-white/10 bg-white/[.05] text-white/70 transition hover:bg-white/10 md:hidden" onClick={() => setLibraryOpen(true)} aria-label="Open library" data-testid="button-open-library"><Menu size={19} /></button>
+          <div className="hidden items-center rounded-full border border-white/10 bg-white/[.04] p-1 md:flex">
+            <button className="rounded-full px-3 py-2 text-[10px] font-mono-custom uppercase tracking-[.12em] text-white/55 transition hover:bg-white/[.08] hover:text-white" onClick={() => openLibraryView('queue')} data-testid="button-open-queue">Queue</button>
+            <button className="rounded-full bg-primary px-3 py-2 text-[10px] font-mono-custom uppercase tracking-[.12em] text-primary-foreground transition hover:brightness-110" onClick={() => openLibraryView('library')} data-testid="button-open-library-top">Library</button>
+          </div>
+          <button className="flex h-11 w-11 items-center justify-center rounded-2xl border border-white/10 bg-white/[.05] text-white/70 transition hover:bg-white/10 md:hidden" onClick={() => openLibraryView('library')} aria-label="Open library" data-testid="button-open-library"><Menu size={19} /></button>
         </div>
       </header>
 
@@ -237,12 +247,21 @@ function App() {
       <div className="fixed bottom-0 left-0 right-0 z-30 border-t border-white/[.08] bg-[#101d22]/90 px-5 py-3 backdrop-blur-xl lg:hidden safe-bottom"><div className="mx-auto flex max-w-xl items-center gap-3"><Cover song={current} size="sm" /><div className="min-w-0 flex-1"><p className="truncate text-sm text-white">{current?.title}</p><p className="truncate text-xs text-white/40">{current?.artist}</p></div><button onClick={() => setIsPlaying(!isPlaying)} className="flex h-10 w-10 items-center justify-center rounded-full bg-primary text-primary-foreground" aria-label={isPlaying ? 'Pause' : 'Play'} data-testid="button-mobile-play">{isPlaying ? <Pause size={17} fill="currentColor" /> : <Play size={17} fill="currentColor" />}</button></div></div>
       <button className={`fixed inset-0 z-40 bg-black/50 transition-opacity duration-300 ${libraryOpen ? 'opacity-100' : 'pointer-events-none opacity-0'}`} onClick={() => setLibraryOpen(false)} aria-label="Close library overlay" data-testid="button-close-overlay" />
         <section className={`fixed right-0 top-0 z-50 flex h-full w-full max-w-[470px] flex-col border-l border-white/10 bg-[#071114] shadow-[-18px_0_60px_rgba(0,0,0,.5)] transition-transform duration-500 ${libraryOpen ? 'translate-x-0' : 'translate-x-full'}`}>
-         <div className="flex items-center justify-between border-b border-white/[.08] px-6 py-6"><div><p className="text-[10px] font-mono-custom uppercase tracking-[.2em] text-primary">Your collection</p><h2 className="mt-1 font-display text-2xl font-semibold">Library</h2></div><div className="flex items-center gap-1"><button className="rounded-full p-2 text-white/45 transition hover:bg-white/10 hover:text-primary" onClick={() => setImportOpen(true)} aria-label="Import local audio" data-testid="button-import-audio"><Plus size={18} /></button><button className="rounded-full p-2 text-white/50 hover:bg-white/10 hover:text-white" onClick={() => setLibraryOpen(false)} aria-label="Close library" data-testid="button-close-library"><X size={20} /></button></div></div>
+         <div className="border-b border-white/[.08] px-6 py-5">
+           <div className="flex items-center justify-between"><div><p className="text-[10px] font-mono-custom uppercase tracking-[.2em] text-primary">Your collection</p><h2 className="mt-1 font-display text-2xl font-semibold">{libraryView === 'queue' ? 'Queue' : 'Library'}</h2></div><div className="flex items-center gap-1"><button className="rounded-full p-2 text-white/45 transition hover:bg-white/10 hover:text-primary" onClick={() => setImportOpen(true)} aria-label="Import local audio" data-testid="button-import-audio"><Plus size={18} /></button><button className="rounded-full p-2 text-white/50 hover:bg-white/10 hover:text-white" onClick={() => setLibraryOpen(false)} aria-label="Close library" data-testid="button-close-library"><X size={20} /></button></div></div>
+           <div className="mt-4 grid grid-cols-2 rounded-xl border border-white/10 bg-white/[.03] p-1">
+             <button onClick={() => setLibraryView('queue')} className={`rounded-lg py-2 text-xs transition ${libraryView === 'queue' ? 'bg-white/[.09] text-white' : 'text-white/40 hover:text-white'}`} data-testid="button-panel-queue">Queue</button>
+             <button onClick={() => setLibraryView('library')} className={`rounded-lg py-2 text-xs transition ${libraryView === 'library' ? 'bg-primary text-primary-foreground' : 'text-white/40 hover:text-white'}`} data-testid="button-panel-library">Library</button>
+           </div>
+         </div>
         <div className="flex-1 overflow-y-auto px-6 py-6">
-          <div className="relative"><Search className="absolute left-3 top-1/2 -translate-y-1/2 text-white/30" size={16} /><input value={query} onChange={(event) => setQuery(event.target.value)} placeholder="Search your music" className="w-full rounded-xl border border-white/10 bg-white/[.04] py-3 pl-10 pr-4 text-sm text-white outline-none placeholder:text-white/30 focus:border-primary/60" aria-label="Search music" data-testid="input-search" /></div>
-          <div className="mt-6 flex items-center justify-between"><div className="flex gap-1 overflow-x-auto pb-1">{playlists.map((playlist) => <button key={playlist.id} onClick={() => setActivePlaylist(playlist.id)} className={`whitespace-nowrap rounded-full px-3 py-2 text-xs transition ${activePlaylist === playlist.id ? 'bg-primary text-primary-foreground' : 'bg-white/[.05] text-white/55 hover:text-white'}`} data-testid={`button-playlist-${playlist.id}`}>{playlist.name}</button>)}</div><div className="ml-2 flex shrink-0 gap-1"><button onClick={() => setAddPlaylistOpen(true)} className="rounded-full border border-white/10 p-2 text-primary" aria-label="Add playlist" data-testid="button-add-playlist"><Plus size={16} /></button>{editMode && activePlaylist !== 'p1' && <button onClick={() => setDeleteTarget(active)} className="rounded-full border border-white/10 p-2 text-red-300/70 hover:text-red-300" aria-label="Delete playlist" data-testid="button-delete-playlist"><Trash2 size={15} /></button>}</div></div>
-           <div className="mt-6 flex items-center justify-between"><span className="font-mono-custom text-[10px] uppercase tracking-[.15em] text-white/35">{queue.length} tracks</span><div className="flex items-center gap-2"><button onClick={() => { setEditMode((value) => !value); setQuery(''); setSort('recent'); }} className={`flex items-center gap-1 text-xs ${editMode ? 'text-primary' : 'text-white/40'}`} data-testid="button-edit-mode"><Edit3 size={13} /> {editMode ? 'Done' : 'Edit'}</button><select value={sort} onChange={(event) => setSort(event.target.value as typeof sort)} className="bg-transparent text-xs text-white/45 outline-none" aria-label="Sort tracks" data-testid="select-sort"><option value="recent" className="bg-[#071114]">Recent</option><option value="title" className="bg-[#071114]">Title</option><option value="artist" className="bg-[#071114]">Artist</option></select></div></div>
-           {editMode && <p className="mt-3 text-[10px] text-primary/60">{query || sort !== 'recent' ? 'Use the recent order to rearrange tracks.' : 'Press and hold a track, then drag it into a new position.'}</p>}
+           {libraryView === 'library' && <div className="relative"><Search className="absolute left-3 top-1/2 -translate-y-1/2 text-white/30" size={16} /><input value={query} onChange={(event) => setQuery(event.target.value)} placeholder="Search your music" className="w-full rounded-xl border border-white/10 bg-white/[.04] py-3 pl-10 pr-4 text-sm text-white outline-none placeholder:text-white/30 focus:border-primary/60" aria-label="Search music" data-testid="input-search" /></div>}
+           {libraryView === 'queue' && <div className="mb-5"><p className="font-mono-custom text-[10px] uppercase tracking-[.15em] text-primary">Up next</p><p className="mt-2 text-sm text-white/45">The next songs in your current playlist</p></div>}
+           {libraryView === 'library' && <>
+             <div className="mt-6 flex items-center justify-between"><div className="flex gap-1 overflow-x-auto pb-1">{playlists.map((playlist) => <button key={playlist.id} onClick={() => setActivePlaylist(playlist.id)} className={`whitespace-nowrap rounded-full px-3 py-2 text-xs transition ${activePlaylist === playlist.id ? 'bg-primary text-primary-foreground' : 'bg-white/[.05] text-white/55 hover:text-white'}`} data-testid={`button-playlist-${playlist.id}`}>{playlist.name}</button>)}</div><div className="ml-2 flex shrink-0 gap-1"><button onClick={() => setAddPlaylistOpen(true)} className="rounded-full border border-white/10 p-2 text-primary" aria-label="Add playlist" data-testid="button-add-playlist"><Plus size={16} /></button>{editMode && activePlaylist !== 'p1' && <button onClick={() => setDeleteTarget(active)} className="rounded-full border border-white/10 p-2 text-red-300/70 hover:text-red-300" aria-label="Delete playlist" data-testid="button-delete-playlist"><Trash2 size={15} /></button>}</div></div>
+             <div className="mt-6 flex items-center justify-between"><span className="font-mono-custom text-[10px] uppercase tracking-[.15em] text-white/35">{queue.length} tracks</span><div className="flex items-center gap-2"><button onClick={() => { setEditMode((value) => !value); setQuery(''); setSort('recent'); }} className={`flex items-center gap-1 text-xs ${editMode ? 'text-primary' : 'text-white/40'}`} data-testid="button-edit-mode"><Edit3 size={13} /> {editMode ? 'Done' : 'Edit'}</button><select value={sort} onChange={(event) => setSort(event.target.value as typeof sort)} className="bg-transparent text-xs text-white/45 outline-none" aria-label="Sort tracks" data-testid="select-sort"><option value="recent" className="bg-[#071114]">Recent</option><option value="title" className="bg-[#071114]">Title</option><option value="artist" className="bg-[#071114]">Artist</option></select></div></div>
+             {editMode && <p className="mt-3 text-[10px] text-primary/60">{query || sort !== 'recent' ? 'Use the recent order to rearrange tracks.' : 'Press and hold a track, then drag it into a new position.'}</p>}
+           </>}
            <div className="mt-4 space-y-1">{queue.length ? queue.map((song) => <div key={song.id} data-drag-song-id={song.id} onPointerDown={(event) => beginSongDrag(event, song.id)} className={`group flex items-center gap-3 rounded-xl border-t-2 p-2 transition hover:bg-white/[.04] ${song.id === current?.id ? 'bg-white/[.05]' : ''} ${draggingSongId === song.id ? 'scale-[.98] bg-primary/[.12] shadow-lg' : ''} ${dragOverSongId === song.id && draggingSongId !== song.id ? 'border-primary' : 'border-transparent'}`}><button className="flex min-w-0 flex-1 items-center gap-3 text-left" onClick={() => { if (suppressClickRef.current) return; chooseSong(song); setLibraryOpen(false); }} data-testid={`button-library-song-${song.id}`}><Cover song={song} size="sm" /><span className="min-w-0 flex-1"><span className={`block truncate text-sm ${song.id === current?.id ? 'text-primary' : 'text-white/80'}`}>{song.title}</span><span className="mt-0.5 block truncate text-xs text-white/35">{song.artist}</span></span><span className="font-mono-custom text-[10px] text-white/25">{formatTime(song.duration)}</span></button>{editMode && activePlaylist !== 'p1' && <button onClick={() => removeFromPlaylist(song.id)} className="rounded-lg p-2 text-white/30 hover:text-red-300" aria-label={`Remove ${song.title}`} data-testid={`button-remove-song-${song.id}`}><Trash2 size={15} /></button>}</div>) : <div className="rounded-2xl border border-dashed border-white/10 px-5 py-10 text-center"><ListMusic className="mx-auto text-white/25" size={28} /><p className="mt-3 text-sm text-white/50">Nothing here yet</p><p className="mt-1 text-xs text-white/30">Add tracks to this playlist from your collection.</p></div>}</div>
         </div>
       </section>
@@ -256,7 +275,6 @@ function App() {
       </div>}
       {toast && <div className="fixed bottom-6 left-1/2 z-[70] flex -translate-x-1/2 items-center gap-2 rounded-full border border-primary/25 bg-[#15383a] px-4 py-3 text-xs text-primary shadow-xl" role="status" data-testid="status-toast"><Check size={14} /> {toast}</div>}
       <div className="fixed bottom-7 left-7 z-20 hidden items-center gap-3 text-white/30 lg:flex"><SlidersHorizontal size={14} /><span className="font-mono-custom text-[9px] uppercase tracking-[.15em]">Immersive mode</span></div>
-      <button onClick={() => setLibraryOpen(true)} className="fixed bottom-7 right-8 z-20 hidden items-center gap-2 rounded-full border border-white/10 bg-white/[.05] px-4 py-3 text-xs text-white/60 backdrop-blur-md transition hover:bg-white/10 hover:text-white lg:flex" data-testid="button-open-library-desktop"><ListMusic size={15} /> Library</button>
       <div className="sr-only">{volume === 0 ? <VolumeX /> : <Volume2 />}</div>
     </div>
   );
