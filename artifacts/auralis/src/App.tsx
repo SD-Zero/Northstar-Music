@@ -276,7 +276,7 @@ function App() {
           <div className="mt-0 flex items-end justify-between">
             <div className="rise-in"><p className="mb-3 text-[10px] font-mono-custom uppercase tracking-[.24em] text-primary">Now playing</p></div>
           </div>
-          <div className="relative mt-10 flex min-h-[430px] items-center justify-center overflow-visible md:mt-14 md:min-h-[500px]">
+          <div className="relative mt-3 flex min-h-[360px] items-center justify-center overflow-visible md:mt-6 md:min-h-[440px]">
             {previous && <button className="group absolute left-10 z-[1] hidden w-[24%] max-w-[210px] -translate-x-10 -rotate-[9deg] items-center justify-center opacity-50 transition hover:rotate-[-7deg] hover:opacity-80 md:flex" onClick={() => move(-1)} aria-label="Previous song" data-testid="button-carousel-previous">
               <Cover song={previous} size="lg" className="scale-[.68] opacity-65 blur-[1px] transition group-hover:scale-[.72]" />
             </button>}
