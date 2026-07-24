@@ -1,0 +1,1 @@
+- [Auralis product boundary](auralis-product-boundary.md) — Auralis is intentionally local-only and should preserve the private offline listening-room experience.

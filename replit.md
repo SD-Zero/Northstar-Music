@@ -1,6 +1,6 @@
-# [Project name]
+# Auralis Music Player
 
-_Replace the heading above with the project's name, and this line with one sentence describing what this app does for users._
+A private, offline-first music player that keeps songs, playlists, artwork, and listening preferences on the user's device.
 
 ## Run & Operate
 
@@ -22,23 +22,27 @@ _Replace the heading above with the project's name, and this line with one sente
 
 ## Where things live
 
-_Populate as you build — short repo map plus pointers to the source-of-truth file for DB schema, API contracts, theme files, etc._
+- `artifacts/auralis/src/App.tsx` — player, library panel, local playlist management, and import interactions
+- `artifacts/auralis/src/index.css` — Auralis visual theme, responsive layout, and motion styling
+- `attached_assets/` — original product brief and uploaded source material
 
 ## Architecture decisions
 
-_Populate as you build — non-obvious choices a reader couldn't infer from the code (3-5 bullets)._
+- Music data and preferences are stored locally in the browser; the first build intentionally has no accounts, cloud sync, or remote music service.
+- Seeded sample tracks provide an immediately useful player experience while imported audio uses browser-local object URLs.
+- The now-playing screen owns the primary experience; the library is a slide-out surface so it does not compete with listening.
 
 ## Product
 
-_Describe the high-level user-facing capabilities of this app once they exist._
+Auralis provides a tablet-first now-playing experience with a layered album carousel, simulated playback for seeded tracks, browser playback for imported local audio, playlists, search, sort, favorites, queue navigation, and local persistence.
 
 ## User preferences
 
-_Populate as you build — explicit user instructions worth remembering across sessions._
+- Main accent color: bright teal.
 
 ## Gotchas
 
-_Populate as you build — sharp edges, "always run X before Y" rules._
+- Keep the app local-only unless the user explicitly changes the privacy/offline requirement.
 
 ## Pointers
 
