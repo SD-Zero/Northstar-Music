@@ -201,7 +201,7 @@ function App() {
       <main className="relative z-10 mx-auto max-w-[1380px] px-5 pb-32 md:px-10 lg:pb-14">
         <section className="min-w-0">
           <div className="mt-4 flex items-end justify-between md:mt-10">
-            <div className="rise-in"><p className="mb-3 text-[10px] font-mono-custom uppercase tracking-[.24em] text-primary">Now playing</p><h1 className="font-display text-4xl font-semibold tracking-[-.06em] text-white md:text-6xl">A little<br /><span className="text-white/35">space to listen.</span></h1></div>
+            <div className="rise-in"><p className="mb-3 text-[10px] font-mono-custom uppercase tracking-[.24em] text-primary">Now playing</p></div>
             <div className="hidden text-right md:block"><p className="font-mono-custom text-[10px] uppercase tracking-[.18em] text-white/35">Collection / {active?.name}</p><p className="mt-2 text-sm text-white/60">{queue.length} tracks · offline ready</p></div>
           </div>
           <div className="relative mt-10 flex min-h-[430px] items-center justify-center overflow-visible md:mt-14 md:min-h-[500px]">
