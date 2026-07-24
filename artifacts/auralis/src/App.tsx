@@ -276,7 +276,7 @@ function App() {
           <div className="mt-0 flex items-end justify-between">
             <div className="rise-in"><p className="mb-3 text-[10px] font-mono-custom uppercase tracking-[.24em] text-primary">Now playing</p></div>
           </div>
-          <div className="relative mt-3 flex min-h-[360px] items-center justify-center overflow-visible md:mt-6 md:min-h-[440px]">
+          <div className="relative mt-0 flex min-h-[360px] items-center justify-center overflow-visible md:mt-0 md:min-h-[440px]">
             {previous && <button className="group absolute left-10 z-[1] hidden w-[24%] max-w-[210px] -translate-x-10 -rotate-[9deg] items-center justify-center opacity-50 transition hover:rotate-[-7deg] hover:opacity-80 md:flex" onClick={() => move(-1)} aria-label="Previous song" data-testid="button-carousel-previous">
               <Cover song={previous} size="lg" className="scale-[.68] opacity-65 blur-[1px] transition group-hover:scale-[.72]" />
             </button>}
@@ -288,13 +288,13 @@ function App() {
               <Cover song={next} size="lg" className="scale-[.68] opacity-65 blur-[1px] transition group-hover:scale-[.72]" />
             </button>}
           </div>
-          <div className="mx-auto mt-9 max-w-[600px] text-center md:mt-11">
+          <div className="mx-auto mt-2 max-w-[600px] text-center md:mt-3">
             <div className="flex items-start justify-center gap-3"><div><h2 className="font-display text-2xl font-semibold tracking-[-.04em] text-white md:text-3xl" data-testid="text-current-title">{current?.title}</h2><p className="mt-1 text-sm text-white/45" data-testid="text-current-artist">{current?.artist} <span className="mx-1 text-white/20">/</span> {current?.album}</p></div><button className={`mt-1 rounded-full p-2 transition ${current?.favorite ? 'text-primary' : 'text-white/30 hover:text-white'}`} onClick={() => current && toggleFavorite(current.id)} aria-label="Favorite song" data-testid="button-favorite"><Heart size={19} fill={current?.favorite ? 'currentColor' : 'none'} /></button></div>
-            <div className="mt-8">
+             <div className="mt-3 md:mt-4">
               <div className="group relative"><input aria-label="Seek song" data-testid="input-progress" type="range" min="0" max={current?.duration || 1} value={progress} onChange={(event) => setProgress(Number(event.target.value))} className="h-1 w-full cursor-pointer appearance-none rounded-full bg-white/10" style={{ background: `linear-gradient(to right, hsl(var(--primary)) ${(progress / (current?.duration || 1)) * 100}%, rgba(255,255,255,.1) 0)` }} /><div className="pointer-events-none absolute -top-1 h-3 w-3 rounded-full bg-primary opacity-0 shadow-[0_0_14px_rgba(54,214,195,.9)] transition-opacity group-hover:opacity-100" style={{ left: `calc(${(progress / (current?.duration || 1)) * 100}% - 6px)` }} /></div>
               <div className="mt-2 flex justify-between font-mono-custom text-[10px] text-white/35"><span>{formatTime(progress)}</span><span>{formatTime(current?.duration || 0)}</span></div>
             </div>
-            <div className="mt-6 flex items-center justify-center gap-5 md:gap-8">
+             <div className="mt-3 flex items-center justify-center gap-5 md:mt-4 md:gap-8">
                <button className={`transition ${shuffle ? 'text-primary' : 'text-white/40 hover:text-white'}`} onClick={toggleShuffle} aria-label={shuffle ? 'Restore playlist order' : 'Shuffle queue'} data-testid="button-shuffle"><Shuffle size={18} /></button>
               <button className="text-white/65 transition hover:text-white" onClick={() => move(-1)} aria-label="Previous" data-testid="button-previous"><SkipBack size={22} fill="currentColor" /></button>
               <button className="flex h-16 w-16 items-center justify-center rounded-full bg-primary text-primary-foreground shadow-[0_8px_28px_rgba(54,214,195,.26)] transition hover:scale-105 active:scale-95" onClick={() => setIsPlaying(!isPlaying)} aria-label={isPlaying ? 'Pause' : 'Play'} data-testid="button-play-pause">{isPlaying ? <Pause size={25} fill="currentColor" /> : <Play size={25} fill="currentColor" className="ml-1" />}</button>
