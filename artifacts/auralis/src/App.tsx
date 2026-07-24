@@ -5,7 +5,7 @@ import { Toaster } from '@/components/ui/toaster';
 import {
   AudioLines, Edit3,
   FileAudio, Heart, ListMusic, Menu, Pause, Play, Plus,
-  Repeat, Search, Shuffle, SkipBack, SkipForward, SlidersHorizontal,
+  Repeat, Search, Shuffle, SkipBack, SkipForward,
   Trash2, Volume2, VolumeX, X, Check
 } from 'lucide-react';
 
@@ -199,12 +199,7 @@ function App() {
           <span className="hidden border-l border-white/10 pl-4 text-[10px] font-mono-custom tracking-[.18em] text-white/35 md:inline">PRIVATE PLAYER / 01</span>
         </div>
         <div className="flex items-center gap-2">
-          <span className="hidden items-center gap-2 rounded-full border border-white/10 bg-white/[.03] px-3 py-2 text-[10px] font-mono-custom text-white/45 md:flex"><span className="h-1.5 w-1.5 rounded-full bg-primary shadow-[0_0_12px_rgba(54,214,195,.8)]" /> LOCAL MODE</span>
-          <div className="hidden items-center rounded-full border border-white/10 bg-white/[.04] p-1 md:flex">
-            <button className="rounded-full px-3 py-2 text-[10px] font-mono-custom uppercase tracking-[.12em] text-white/55 transition hover:bg-white/[.08] hover:text-white" onClick={() => openLibraryView('queue')} data-testid="button-open-queue">Queue</button>
-            <button className="rounded-full bg-primary px-3 py-2 text-[10px] font-mono-custom uppercase tracking-[.12em] text-primary-foreground transition hover:brightness-110" onClick={() => openLibraryView('library')} data-testid="button-open-library-top">Library</button>
-          </div>
-          <button className="flex h-11 w-11 items-center justify-center rounded-2xl border border-white/10 bg-white/[.05] text-white/70 transition hover:bg-white/10 md:hidden" onClick={() => openLibraryView('library')} aria-label="Open library" data-testid="button-open-library"><Menu size={19} /></button>
+          <button className="flex h-11 w-11 items-center justify-center rounded-2xl border border-white/10 bg-white/[.05] text-white/70 transition hover:bg-white/10 hover:text-white" onClick={() => openLibraryView('library')} aria-label="Open menu" data-testid="button-open-library"><Menu size={19} /></button>
         </div>
       </header>
 
@@ -212,7 +207,6 @@ function App() {
         <section className="min-w-0">
           <div className="mt-4 flex items-end justify-between md:mt-10">
             <div className="rise-in"><p className="mb-3 text-[10px] font-mono-custom uppercase tracking-[.24em] text-primary">Now playing</p></div>
-            <div className="hidden text-right md:block"><p className="font-mono-custom text-[10px] uppercase tracking-[.18em] text-white/35">Collection / {active?.name}</p><p className="mt-2 text-sm text-white/60">{queue.length} tracks · offline ready</p></div>
           </div>
           <div className="relative mt-10 flex min-h-[430px] items-center justify-center overflow-visible md:mt-14 md:min-h-[500px]">
             {previous && <button className="group absolute left-10 z-[1] hidden w-[24%] max-w-[210px] -translate-x-10 -rotate-[9deg] items-center justify-center opacity-50 transition hover:rotate-[-7deg] hover:opacity-80 md:flex" onClick={() => move(-1)} aria-label="Previous song" data-testid="button-carousel-previous">
@@ -274,7 +268,6 @@ function App() {
         </div>
       </div>}
       {toast && <div className="fixed bottom-6 left-1/2 z-[70] flex -translate-x-1/2 items-center gap-2 rounded-full border border-primary/25 bg-[#15383a] px-4 py-3 text-xs text-primary shadow-xl" role="status" data-testid="status-toast"><Check size={14} /> {toast}</div>}
-      <div className="fixed bottom-7 left-7 z-20 hidden items-center gap-3 text-white/30 lg:flex"><SlidersHorizontal size={14} /><span className="font-mono-custom text-[9px] uppercase tracking-[.15em]">Immersive mode</span></div>
       <div className="sr-only">{volume === 0 ? <VolumeX /> : <Volume2 />}</div>
     </div>
   );
