@@ -3,14 +3,16 @@ import { QueryClient, QueryClientProvider } from '@tanstack/react-query';
 import { TooltipProvider } from '@/components/ui/tooltip';
 import { Toaster } from '@/components/ui/toaster';
 import {
-  Edit3, FileAudio, Heart, ListMusic, Menu, Pause, Play, Plus,
+  Edit3, FileAudio, Heart, ListMusic, Menu, Pause, Play, Plus, Settings,
   Repeat, Search, Shuffle, SkipBack, SkipForward,
   Trash2, Volume2, VolumeX, X, Check
 } from 'lucide-react';
+import { requestedSongSeeds } from './trackSeeds';
 
 type Song = {
   id: string; title: string; artist: string; album: string; duration: number;
   genre: string; year: string; coverA: string; coverB: string; favorite?: boolean;
+  coverUrl?: string; audioUrl?: string;
 };
 type Playlist = { id: string; name: string; songs: string[]; accent: string };
 type LibraryView = 'queue' | 'library';
@@ -27,11 +29,10 @@ const songs: Song[] = [
   { id: 's9', title: 'Falling Apart', artist: 'Khruangbin', album: 'Con Todo El Mundo', duration: 242, genre: 'Psychedelic soul', year: '2018', coverA: '#42523b', coverB: '#ef8354' },
 ];
 
+const defaultSongs: Song[] = [...songs, ...requestedSongSeeds];
 const initialPlaylists: Playlist[] = [
-  { id: 'p1', name: 'All songs', songs: songs.map((s) => s.id), accent: '#36d6c3' },
-  { id: 'p2', name: 'Favorites', songs: songs.filter((s) => s.favorite).map((s) => s.id), accent: '#f2b66d' },
-  { id: 'p3', name: 'Late night focus', songs: ['s1', 's3', 's4', 's7'], accent: '#c5a4f4' },
-  { id: 'p4', name: 'Long drives', songs: ['s2', 's5', 's8', 's9'], accent: '#e48a9a' },
+  { id: 'p1', name: 'All songs', songs: defaultSongs.map((s) => s.id), accent: '#36d6c3' },
+  { id: 'p2', name: 'Favorites', songs: defaultSongs.filter((s) => s.favorite).map((s) => s.id), accent: '#f2b66d' },
 ];
 
 const queryClient = new QueryClient();
@@ -39,9 +40,36 @@ const formatTime = (seconds: number) => `${Math.floor(seconds / 60)}:${String(Ma
 const readStorage = <T,>(key: string, fallback: T): T => {
   try { const stored = localStorage.getItem(key); return stored ? JSON.parse(stored) as T : fallback; } catch { return fallback; }
 };
+const readSongs = (): Song[] => {
+  const stored = readStorage<Song[]>('auralis-songs', []);
+  const storedById = new Map(stored.map((song) => [song.id, song]));
+  return defaultSongs.map((song) => storedById.get(song.id) || song).concat(
+    stored.filter((song) => !defaultSongs.some((defaultSong) => defaultSong.id === song.id)),
+  );
+};
+const readPlaylists = (): Playlist[] => {
+  const stored = readStorage<Playlist[]>('auralis-playlists', initialPlaylists);
+  const byId = new Map(stored.filter((playlist) => playlist.id === 'p1' || playlist.id === 'p2').map((playlist) => [playlist.id, playlist]));
+  const storedSongs = readSongs();
+  return [
+    { ...(byId.get('p1') || initialPlaylists[0]), songs: storedSongs.map((song) => song.id) },
+    { ...(byId.get('p2') || initialPlaylists[1]), songs: storedSongs.filter((song) => song.favorite).map((song) => song.id) },
+  ];
+};
+const fileToDataUrl = (file: File): Promise<string> => new Promise((resolve, reject) => {
+  const reader = new FileReader();
+  reader.onload = () => resolve(String(reader.result));
+  reader.onerror = () => reject(reader.error);
+  reader.readAsDataURL(file);
+});
 
 function Cover({ song, size = 'md', className = '' }: { song?: Song; size?: 'sm' | 'md' | 'lg'; className?: string }) {
   if (!song) return <div className={`cover-art ${className}`} style={{ '--cover-a': '#18343a', '--cover-b': '#2b5e61' } as CSSProperties} />;
+  if (song.coverUrl) {
+    return <div className={`cover-art ${size === 'sm' ? 'w-12 h-12' : size === 'lg' ? 'w-[min(61vw,382px)] h-[min(61vw,382px)] md:w-[min(43vw,440px)] md:h-[min(43vw,440px)]' : 'w-20 h-20'} ${className}`}>
+      <img src={song.coverUrl} alt={`${song.album} cover`} className="absolute inset-0 h-full w-full object-cover" />
+    </div>;
+  }
   return (
     <div className={`cover-art ${size === 'sm' ? 'w-12 h-12' : size === 'lg' ? 'w-[min(61vw,382px)] h-[min(61vw,382px)] md:w-[min(43vw,440px)] md:h-[min(43vw,440px)]' : 'w-20 h-20'} ${className}`}
       style={{ '--cover-a': song.coverA, '--cover-b': song.coverB } as CSSProperties} data-testid={`cover-${song.id}`}>
@@ -52,7 +80,7 @@ function Cover({ song, size = 'md', className = '' }: { song?: Song; size?: 'sm'
 }
 
 function App() {
-  const [playlists, setPlaylists] = useState<Playlist[]>(() => readStorage('auralis-playlists', initialPlaylists));
+  const [playlists, setPlaylists] = useState<Playlist[]>(readPlaylists);
   const [activePlaylist, setActivePlaylist] = useState('p1');
   const [currentId, setCurrentId] = useState('s1');
   const [isPlaying, setIsPlaying] = useState(false);
@@ -73,17 +101,24 @@ function App() {
   const [addPlaylistOpen, setAddPlaylistOpen] = useState(false);
   const [newPlaylistName, setNewPlaylistName] = useState('');
   const [deleteTarget, setDeleteTarget] = useState<Playlist | null>(null);
+  const [editSongTarget, setEditSongTarget] = useState<Song | null>(null);
+  const [editSongDraft, setEditSongDraft] = useState({ title: '', artist: '', album: '' });
+  const [editAudioFile, setEditAudioFile] = useState<File | null>(null);
+  const [editCoverFile, setEditCoverFile] = useState<File | null>(null);
   const [toast, setToast] = useState('');
-  const [localSongs, setLocalSongs] = useState<Song[]>(() => readStorage('auralis-songs', songs));
+  const [localSongs, setLocalSongs] = useState<Song[]>(readSongs);
   const [selectedFile, setSelectedFile] = useState<File | null>(null);
   const [draggingSongId, setDraggingSongId] = useState<string | null>(null);
   const [dragOverSongId, setDragOverSongId] = useState<string | null>(null);
   const fileRef = useRef<HTMLInputElement>(null);
+  const editAudioRef = useRef<HTMLInputElement>(null);
+  const editCoverRef = useRef<HTMLInputElement>(null);
   const dragRef = useRef<{ id: string; pointerId: number; moved: boolean } | null>(null);
   const suppressClickRef = useRef(false);
 
   const current = localSongs.find((song) => song.id === currentId) || localSongs[0];
   const active = playlists.find((playlist) => playlist.id === activePlaylist) || playlists[0];
+  const playlistForSong = (songId: string, favorite?: boolean) => playlists.find((playlist) => playlist.id !== 'p1' && playlist.songs.includes(songId))?.id || (favorite ? 'p2' : 'p1');
   const baseQueue = useMemo(() => {
     const playlistSongs = active?.songs.map((id) => localSongs.find((song) => song.id === id)).filter(Boolean) as Song[] || localSongs;
     const filtered = playlistSongs.filter((song) => `${song.title} ${song.artist} ${song.album}`.toLowerCase().includes(query.toLowerCase()));
@@ -225,6 +260,7 @@ function App() {
   };
   const beginSongDrag = (event: ReactPointerEvent<HTMLDivElement>, songId: string) => {
     if (!editMode || Boolean(query) || sort !== 'recent') return;
+    if ((event.target as HTMLElement).closest('button, select, input')) return;
     event.preventDefault();
     event.currentTarget.setPointerCapture(event.pointerId);
     dragRef.current = { id: songId, pointerId: event.pointerId, moved: false };
@@ -248,10 +284,40 @@ function App() {
     setPlaylists(remaining); setActivePlaylist(remaining[0]?.id || 'p1'); setDeleteTarget(null); setToast('Playlist deleted');
   };
   const removeFromPlaylist = (songId: string) => setPlaylists((items) => items.map((item) => item.id === activePlaylist ? { ...item, songs: item.songs.filter((id) => id !== songId) } : item));
-  const importAudio = () => {
+  const assignSongToPlaylist = (songId: string, playlistId: string) => {
+    setPlaylists((items) => items.map((playlist) => {
+      if (playlist.id === 'p1') return { ...playlist, songs: playlist.songs.includes(songId) ? playlist.songs : [...playlist.songs, songId] };
+      if (playlist.id === playlistId) return { ...playlist, songs: [...new Set([...playlist.songs, songId])] };
+      return { ...playlist, songs: playlist.songs.filter((id) => id !== songId) };
+    }));
+    setLocalSongs((items) => items.map((song) => song.id === songId ? { ...song, favorite: playlistId === 'p2' } : song));
+    setToast(playlistId === 'p2' ? 'Added to Favorites' : 'Removed from Favorites');
+  };
+  const openSongEditor = (song: Song) => {
+    setEditSongTarget(song);
+    setEditSongDraft({ title: song.title, artist: song.artist, album: song.album });
+    setEditAudioFile(null);
+    setEditCoverFile(null);
+  };
+  const saveSongEdits = async () => {
+    if (!editSongTarget) return;
+    const updates: Partial<Song> = {
+      title: editSongDraft.title.trim() || editSongTarget.title,
+      artist: editSongDraft.artist.trim() || editSongTarget.artist,
+      album: editSongDraft.album.trim() || editSongTarget.album,
+    };
+    if (editAudioFile) updates.audioUrl = await fileToDataUrl(editAudioFile);
+    if (editCoverFile) updates.coverUrl = await fileToDataUrl(editCoverFile);
+    setLocalSongs((items) => items.map((song) => song.id === editSongTarget.id ? { ...song, ...updates } : song));
+    setEditSongTarget(null);
+    setEditAudioFile(null);
+    setEditCoverFile(null);
+    setToast('Song details saved');
+  };
+  const importAudio = async () => {
     if (!selectedFile) return;
     const id = `local-${Date.now()}`;
-    const imported: Song = { id, title: importName.trim() || selectedFile.name.replace(/\.[^.]+$/, ''), artist: 'Local file', album: 'Imported audio', duration: 210, genre: 'Local', year: String(new Date().getFullYear()), coverA: '#24555b', coverB: '#d7a66d' };
+    const imported: Song = { id, title: importName.trim() || selectedFile.name.replace(/\.[^.]+$/, ''), artist: 'Local file', album: 'Imported audio', duration: 210, genre: 'Local', year: String(new Date().getFullYear()), coverA: '#24555b', coverB: '#d7a66d', audioUrl: await fileToDataUrl(selectedFile) };
     setLocalSongs((items) => [imported, ...items]);
     setPlaylists((items) => items.map((item) => item.id === 'p1' ? { ...item, songs: [id, ...item.songs] } : item));
     setImportOpen(false); setSelectedFile(null); setImportName(''); setToast('Audio added to your library');
@@ -323,15 +389,16 @@ function App() {
               <div className="mt-6 flex items-center justify-between"><span className="font-mono-custom text-[10px] uppercase tracking-[.15em] text-white/35">{queue.length} tracks</span><div className="flex items-center gap-2"><button onClick={shuffleAndPlay} className="flex items-center gap-1 rounded-full border border-primary/30 bg-primary/[.08] px-3 py-2 text-xs text-primary transition hover:bg-primary/[.14]" data-testid="button-shuffle-play"><Shuffle size={13} /> Shuffle &amp; Play</button><button onClick={() => { setEditMode((value) => !value); setQuery(''); setSort('recent'); }} className={`flex items-center gap-1 text-xs ${editMode ? 'text-primary' : 'text-white/40'}`} data-testid="button-edit-mode"><Edit3 size={13} /> {editMode ? 'Done' : 'Edit'}</button><select value={sort} onChange={(event) => setSort(event.target.value as typeof sort)} className="bg-transparent text-xs text-white/45 outline-none" aria-label="Sort tracks" data-testid="select-sort"><option value="recent" className="bg-[#071114]">Recent</option><option value="title" className="bg-[#071114]">Title</option><option value="artist" className="bg-[#071114]">Artist</option></select></div></div>
              {editMode && <p className="mt-3 text-[10px] text-primary/60">{query || sort !== 'recent' ? 'Use the recent order to rearrange tracks.' : 'Press and hold a track, then drag it into a new position.'}</p>}
            </>}
-           <div className="mt-4 space-y-1">{queue.length ? queue.map((song) => <div key={song.id} data-drag-song-id={song.id} onPointerDown={(event) => beginSongDrag(event, song.id)} className={`group flex items-center gap-3 rounded-xl border-t-2 p-2 transition hover:bg-white/[.04] ${song.id === current?.id ? 'bg-white/[.05]' : ''} ${draggingSongId === song.id ? 'scale-[.98] bg-primary/[.12] shadow-lg' : ''} ${dragOverSongId === song.id && draggingSongId !== song.id ? 'border-primary' : 'border-transparent'}`}><button className="flex min-w-0 flex-1 items-center gap-3 text-left" onClick={() => { if (suppressClickRef.current) return; chooseSong(song); setLibraryOpen(false); }} data-testid={`button-library-song-${song.id}`}><Cover song={song} size="sm" /><span className="min-w-0 flex-1"><span className={`block truncate text-sm ${song.id === current?.id ? 'text-primary' : 'text-white/80'}`}>{song.title}</span><span className="mt-0.5 block truncate text-xs text-white/35">{song.artist}</span></span><span className="font-mono-custom text-[10px] text-white/25">{formatTime(song.duration)}</span></button>{editMode && activePlaylist !== 'p1' && <button onClick={() => removeFromPlaylist(song.id)} className="rounded-lg p-2 text-white/30 hover:text-red-300" aria-label={`Remove ${song.title}`} data-testid={`button-remove-song-${song.id}`}><Trash2 size={15} /></button>}</div>) : <div className="rounded-2xl border border-dashed border-white/10 px-5 py-10 text-center"><ListMusic className="mx-auto text-white/25" size={28} /><p className="mt-3 text-sm text-white/50">Nothing here yet</p><p className="mt-1 text-xs text-white/30">Add tracks to this playlist from your collection.</p></div>}</div>
+            <div className="mt-4 space-y-1">{queue.length ? queue.map((song) => <div key={song.id} data-drag-song-id={song.id} onPointerDown={(event) => beginSongDrag(event, song.id)} className={`select-none touch-none group flex items-center gap-3 rounded-xl border-t-2 p-2 transition hover:bg-white/[.04] ${song.id === current?.id ? 'bg-white/[.05]' : ''} ${draggingSongId === song.id ? 'scale-[.98] bg-primary/[.12] shadow-lg' : ''} ${dragOverSongId === song.id && draggingSongId !== song.id ? 'border-primary' : 'border-transparent'}`}><button className="flex min-w-0 flex-1 items-center gap-3 text-left" onClick={() => { if (suppressClickRef.current) return; chooseSong(song); setLibraryOpen(false); }} data-testid={`button-library-song-${song.id}`}><Cover song={song} size="sm" /><span className="min-w-0 flex-1"><span className={`block truncate text-sm ${song.id === current?.id ? 'text-primary' : 'text-white/80'}`}>{song.title}</span><span className="mt-0.5 block truncate text-xs text-white/35">{song.artist}</span></span><span className="font-mono-custom text-[10px] text-white/25">{formatTime(song.duration)}</span></button>{editMode && <div className="flex shrink-0 items-center gap-1"><select value={playlistForSong(song.id, song.favorite)} onChange={(event) => assignSongToPlaylist(song.id, event.target.value)} className="max-w-[112px] rounded-lg border border-white/10 bg-[#0b171a] px-2 py-2 text-[10px] text-white/60 outline-none focus:border-primary/60" aria-label={`Playlist for ${song.title}`} data-testid={`select-song-playlist-${song.id}`}><option value="p1">All songs</option><option value="p2">Favorites</option>{playlists.filter((playlist) => playlist.id !== 'p1' && playlist.id !== 'p2').map((playlist) => <option key={playlist.id} value={playlist.id}>{playlist.name}</option>)}</select><button onClick={() => openSongEditor(song)} className="rounded-lg p-2 text-white/35 transition hover:bg-white/10 hover:text-primary" aria-label={`Edit ${song.title}`} data-testid={`button-edit-song-${song.id}`}><Settings size={15} /></button>{activePlaylist !== 'p1' && <button onClick={() => removeFromPlaylist(song.id)} className="rounded-lg p-2 text-white/30 hover:text-red-300" aria-label={`Remove ${song.title}`} data-testid={`button-remove-song-${song.id}`}><Trash2 size={15} /></button>}</div>}</div>) : <div className="rounded-2xl border border-dashed border-white/10 px-5 py-10 text-center"><ListMusic className="mx-auto text-white/25" size={28} /><p className="mt-3 text-sm text-white/50">Nothing here yet</p><p className="mt-1 text-xs text-white/30">Add tracks to this playlist from your collection.</p></div>}</div>
         </div>
       </section>
 
-      {(importOpen || addPlaylistOpen || deleteTarget) && <div className="fixed inset-0 z-[60] flex items-center justify-center bg-black/60 p-5 backdrop-blur-sm" data-testid="modal-overlay">
-        <div className="w-full max-w-md rounded-3xl border border-white/10 bg-[#172a2f] p-6 shadow-2xl">
+       {(importOpen || addPlaylistOpen || deleteTarget || editSongTarget) && <div className="fixed inset-0 z-[60] flex items-center justify-center bg-black/80 p-5 backdrop-blur-sm" data-testid="modal-overlay">
+         <div className="w-full max-w-md rounded-3xl border border-white/10 bg-[#0d191c] p-6 shadow-2xl">
           {importOpen && <><div className="flex items-start justify-between"><div><p className="text-[10px] font-mono-custom uppercase tracking-[.18em] text-primary">Local import</p><h3 className="mt-2 font-display text-2xl font-semibold">Bring your own sound</h3></div><button onClick={() => setImportOpen(false)} aria-label="Close import dialog" data-testid="button-close-import"><X size={18} /></button></div><div className="mt-6 rounded-2xl border border-dashed border-white/15 p-5 text-center"><FileAudio className="mx-auto text-primary" size={27} />{selectedFile ? <p className="mt-3 truncate text-sm text-white">{selectedFile.name}</p> : <><p className="mt-3 text-sm text-white/70">Choose an audio file from this device</p><button onClick={() => fileRef.current?.click()} className="mt-3 rounded-lg bg-white/10 px-3 py-2 text-xs text-white hover:bg-white/15" data-testid="button-choose-file">Browse files</button></>}<input ref={fileRef} type="file" accept="audio/*" className="hidden" onChange={(event) => setSelectedFile(event.target.files?.[0] || null)} data-testid="input-file" /></div><label className="mt-5 block text-xs text-white/45">Track title<input value={importName} onChange={(event) => setImportName(event.target.value)} placeholder={selectedFile?.name.replace(/\.[^.]+$/, '') || 'Name this track'} className="mt-2 w-full rounded-xl border border-white/10 bg-white/[.04] px-4 py-3 text-sm text-white outline-none focus:border-primary/60" data-testid="input-import-title" /></label><button disabled={!selectedFile} onClick={importAudio} className="mt-5 w-full rounded-xl bg-primary py-3 text-sm font-semibold text-primary-foreground disabled:cursor-not-allowed disabled:opacity-30" data-testid="button-confirm-import">Add to library</button></>}
           {addPlaylistOpen && <><div className="flex items-start justify-between"><div><p className="text-[10px] font-mono-custom uppercase tracking-[.18em] text-primary">New playlist</p><h3 className="mt-2 font-display text-2xl font-semibold">Make a new space</h3></div><button onClick={() => setAddPlaylistOpen(false)} aria-label="Close playlist dialog" data-testid="button-close-playlist"><X size={18} /></button></div><input autoFocus value={newPlaylistName} onChange={(event) => setNewPlaylistName(event.target.value)} onKeyDown={(event) => event.key === 'Enter' && createPlaylist()} placeholder="Playlist name" className="mt-7 w-full rounded-xl border border-white/10 bg-white/[.04] px-4 py-3 text-sm text-white outline-none focus:border-primary/60" data-testid="input-playlist-name" /><button onClick={createPlaylist} className="mt-4 w-full rounded-xl bg-primary py-3 text-sm font-semibold text-primary-foreground" data-testid="button-confirm-playlist">Create playlist</button></>}
-          {deleteTarget && <><div className="flex h-11 w-11 items-center justify-center rounded-2xl bg-red-400/10 text-red-300"><Trash2 size={20} /></div><h3 className="mt-5 font-display text-2xl font-semibold">Delete “{deleteTarget.name}”?</h3><p className="mt-2 text-sm leading-6 text-white/45">The playlist will be removed from this device. Your audio files will stay in the library.</p><div className="mt-7 flex gap-3"><button onClick={() => setDeleteTarget(null)} className="flex-1 rounded-xl border border-white/10 py-3 text-sm text-white/65" data-testid="button-cancel-delete">Keep it</button><button onClick={deletePlaylist} className="flex-1 rounded-xl bg-red-400/90 py-3 text-sm font-semibold text-[#201417]" data-testid="button-confirm-delete">Delete playlist</button></div></>}
+           {editSongTarget && <><div className="flex items-start justify-between"><div><p className="text-[10px] font-mono-custom uppercase tracking-[.18em] text-primary">Song settings</p><h3 className="mt-2 font-display text-2xl font-semibold">Edit track</h3></div><button onClick={() => setEditSongTarget(null)} aria-label="Close song editor" data-testid="button-close-song-editor"><X size={18} /></button></div><div className="mt-6 grid gap-4"><label className="text-xs text-white/45">Track title<input value={editSongDraft.title} onChange={(event) => setEditSongDraft((draft) => ({ ...draft, title: event.target.value }))} className="mt-2 w-full rounded-xl border border-white/10 bg-white/[.04] px-4 py-3 text-sm text-white outline-none focus:border-primary/60" data-testid="input-edit-song-title" /></label><label className="text-xs text-white/45">Artist<input value={editSongDraft.artist} onChange={(event) => setEditSongDraft((draft) => ({ ...draft, artist: event.target.value }))} className="mt-2 w-full rounded-xl border border-white/10 bg-white/[.04] px-4 py-3 text-sm text-white outline-none focus:border-primary/60" data-testid="input-edit-song-artist" /></label><label className="text-xs text-white/45">Album<input value={editSongDraft.album} onChange={(event) => setEditSongDraft((draft) => ({ ...draft, album: event.target.value }))} className="mt-2 w-full rounded-xl border border-white/10 bg-white/[.04] px-4 py-3 text-sm text-white outline-none focus:border-primary/60" data-testid="input-edit-song-album" /></label><div className="grid grid-cols-2 gap-3"><button onClick={() => editAudioRef.current?.click()} className="rounded-xl border border-white/10 bg-white/[.04] px-3 py-3 text-left text-xs text-white/60 hover:border-primary/40" data-testid="button-edit-audio-file"><FileAudio className="mb-2 text-primary" size={17} />{editAudioFile ? editAudioFile.name : editSongTarget.audioUrl ? 'Replace audio file' : 'Add audio file'}</button><button onClick={() => editCoverRef.current?.click()} className="rounded-xl border border-white/10 bg-white/[.04] px-3 py-3 text-left text-xs text-white/60 hover:border-primary/40" data-testid="button-edit-cover-file"><Cover song={editSongTarget} size="sm" className="mb-2" />{editCoverFile ? editCoverFile.name : editSongTarget.coverUrl ? 'Replace album cover' : 'Add album cover'}</button></div><input ref={editAudioRef} type="file" accept="audio/*" className="hidden" onChange={(event) => setEditAudioFile(event.target.files?.[0] || null)} data-testid="input-edit-audio-file" /><input ref={editCoverRef} type="file" accept="image/*" className="hidden" onChange={(event) => setEditCoverFile(event.target.files?.[0] || null)} data-testid="input-edit-cover-file" /></div><button onClick={() => void saveSongEdits()} className="mt-5 w-full rounded-xl bg-primary py-3 text-sm font-semibold text-primary-foreground" data-testid="button-save-song-edits">Save changes</button></>}
+           {deleteTarget && <><div className="flex h-11 w-11 items-center justify-center rounded-2xl bg-red-950/80 text-red-300"><Trash2 size={20} /></div><h3 className="mt-5 font-display text-2xl font-semibold">Delete “{deleteTarget.name}”?</h3><p className="mt-2 text-sm leading-6 text-white/45">The playlist will be removed from this device. Your audio files will stay in the library.</p><div className="mt-7 flex gap-3"><button onClick={() => setDeleteTarget(null)} className="flex-1 rounded-xl border border-white/10 py-3 text-sm text-white/65" data-testid="button-cancel-delete">Keep it</button><button onClick={deletePlaylist} className="flex-1 rounded-xl bg-red-950 py-3 text-sm font-semibold text-red-100" data-testid="button-confirm-delete">Delete playlist</button></div></>}
         </div>
       </div>}
       {toast && <div className="fixed bottom-6 left-1/2 z-[70] flex -translate-x-1/2 items-center gap-2 rounded-full border border-primary/25 bg-[#15383a] px-4 py-3 text-xs text-primary shadow-xl" role="status" data-testid="status-toast"><Check size={14} /> {toast}</div>}
