@@ -14,3 +14,9 @@ Navigation should keep Queue and Library as distinct views inside the top-right 
 **Why:** The user explicitly corrected the navigation hierarchy and artwork proportions after seeing the intermediate layout.
 
 **How to apply:** Use the menu button as the single entry point, keep queue contents inside the Queue view and playlist/search/edit controls inside Library, and keep chrome minimal. Use a fixed 1:1 aspect ratio for all cover art, including carousel neighbors.
+
+Playlist shuffle should be explicit: Shuffle & Play creates a shuffled queue, the active shuffle control restores playlist order, and activating shuffle again generates a fresh order rather than repeating the previous one.
+
+**Why:** The user wants playlist playback to feel intentional and reversible, with a different randomized order on each new shuffle.
+
+**How to apply:** Keep the shuffled sequence as the active queue for previous/next navigation and the Queue view, while leaving the saved playlist order unchanged.

@@ -64,6 +64,9 @@ function App() {
   const [sort, setSort] = useState<'recent' | 'title' | 'artist'>('recent');
   const [editMode, setEditMode] = useState(false);
   const [shuffle, setShuffle] = useState(false);
+  const [shuffleOrder, setShuffleOrder] = useState<string[] | null>(null);
+  const [shuffledPlaylistId, setShuffledPlaylistId] = useState<string | null>(null);
+  const [lastShuffleOrders, setLastShuffleOrders] = useState<Record<string, string[]>>({});
   const [repeat, setRepeat] = useState(false);
   const [volume, setVolume] = useState(76);
   const [importOpen, setImportOpen] = useState(false);
@@ -82,11 +85,16 @@ function App() {
 
   const current = localSongs.find((song) => song.id === currentId) || localSongs[0];
   const active = playlists.find((playlist) => playlist.id === activePlaylist) || playlists[0];
-  const queue = useMemo(() => {
+  const baseQueue = useMemo(() => {
     const playlistSongs = active?.songs.map((id) => localSongs.find((song) => song.id === id)).filter(Boolean) as Song[] || localSongs;
     const filtered = playlistSongs.filter((song) => `${song.title} ${song.artist} ${song.album}`.toLowerCase().includes(query.toLowerCase()));
     return [...filtered].sort((a, b) => sort === 'title' ? a.title.localeCompare(b.title) : sort === 'artist' ? a.artist.localeCompare(b.artist) : 0);
   }, [active, localSongs, query, sort]);
+  const queue = useMemo(() => {
+    if (!shuffle || shuffledPlaylistId !== activePlaylist || !shuffleOrder) return baseQueue;
+    const songsById = new Map(baseQueue.map((song) => [song.id, song]));
+    return shuffleOrder.map((id) => songsById.get(id)).filter(Boolean) as Song[];
+  }, [activePlaylist, baseQueue, shuffle, shuffleOrder, shuffledPlaylistId]);
   const currentIndex = Math.max(0, queue.findIndex((song) => song.id === current?.id));
   const previous = currentIndex > 0 ? queue[currentIndex - 1] : undefined;
   const next = currentIndex < queue.length - 1 ? queue[currentIndex + 1] : undefined;
@@ -150,6 +158,62 @@ function App() {
   const openLibraryView = (view: LibraryView) => {
     setLibraryView(view);
     setLibraryOpen(true);
+  };
+  const selectPlaylist = (playlistId: string) => {
+    setActivePlaylist(playlistId);
+    setShuffle(false);
+    setShuffleOrder(null);
+    setShuffledPlaylistId(null);
+    setQuery('');
+    setSort('recent');
+  };
+  const createShuffleOrder = (ids: string[], previousOrder?: string[]) => {
+    if (ids.length < 2) return [...ids];
+    const nextOrder = [...ids];
+    for (let index = nextOrder.length - 1; index > 0; index -= 1) {
+      const swapIndex = Math.floor(Math.random() * (index + 1));
+      [nextOrder[index], nextOrder[swapIndex]] = [nextOrder[swapIndex], nextOrder[index]];
+    }
+    if (previousOrder && nextOrder.every((id, index) => id === previousOrder[index])) {
+      [nextOrder[0], nextOrder[1]] = [nextOrder[1], nextOrder[0]];
+    }
+    return nextOrder;
+  };
+  const shuffleAndPlay = () => {
+    const playlistIds = active?.songs.filter((id) => localSongs.some((song) => song.id === id)) || localSongs.map((song) => song.id);
+    if (!playlistIds.length) {
+      setToast('This playlist is empty');
+      return;
+    }
+    const nextOrder = createShuffleOrder(playlistIds, lastShuffleOrders[activePlaylist]);
+    setLastShuffleOrders((orders) => ({ ...orders, [activePlaylist]: nextOrder }));
+    setShuffleOrder(nextOrder);
+    setShuffledPlaylistId(activePlaylist);
+    setShuffle(true);
+    setQuery('');
+    setSort('recent');
+    const firstSong = localSongs.find((song) => song.id === nextOrder[0]);
+    if (firstSong) chooseSong(firstSong);
+    setLibraryView('queue');
+    setToast('Shuffled queue ready');
+  };
+  const toggleShuffle = () => {
+    if (shuffle && shuffledPlaylistId === activePlaylist) {
+      setShuffle(false);
+      setShuffleOrder(null);
+      setToast('Playlist order restored');
+      return;
+    }
+    const ids = baseQueue.map((song) => song.id);
+    if (!ids.length) return;
+    const nextOrder = createShuffleOrder(ids, lastShuffleOrders[activePlaylist]);
+    setLastShuffleOrders((orders) => ({ ...orders, [activePlaylist]: nextOrder }));
+    setShuffleOrder(nextOrder);
+    setShuffledPlaylistId(activePlaylist);
+    setShuffle(true);
+    const firstSong = localSongs.find((song) => song.id === nextOrder[0]);
+    if (firstSong) chooseSong(firstSong);
+    setToast('Queue reshuffled');
   };
   const move = (direction: number) => {
     const target = direction < 0 ? previous : next;
@@ -227,7 +291,7 @@ function App() {
               <div className="mt-2 flex justify-between font-mono-custom text-[10px] text-white/35"><span>{formatTime(progress)}</span><span>{formatTime(current?.duration || 0)}</span></div>
             </div>
             <div className="mt-6 flex items-center justify-center gap-5 md:gap-8">
-              <button className={`transition ${shuffle ? 'text-primary' : 'text-white/40 hover:text-white'}`} onClick={() => setShuffle(!shuffle)} aria-label="Toggle shuffle" data-testid="button-shuffle"><Shuffle size={18} /></button>
+               <button className={`transition ${shuffle ? 'text-primary' : 'text-white/40 hover:text-white'}`} onClick={toggleShuffle} aria-label={shuffle ? 'Restore playlist order' : 'Shuffle queue'} data-testid="button-shuffle"><Shuffle size={18} /></button>
               <button className="text-white/65 transition hover:text-white" onClick={() => move(-1)} aria-label="Previous" data-testid="button-previous"><SkipBack size={22} fill="currentColor" /></button>
               <button className="flex h-16 w-16 items-center justify-center rounded-full bg-primary text-primary-foreground shadow-[0_8px_28px_rgba(54,214,195,.26)] transition hover:scale-105 active:scale-95" onClick={() => setIsPlaying(!isPlaying)} aria-label={isPlaying ? 'Pause' : 'Play'} data-testid="button-play-pause">{isPlaying ? <Pause size={25} fill="currentColor" /> : <Play size={25} fill="currentColor" className="ml-1" />}</button>
               <button className="text-white/65 transition hover:text-white" onClick={() => move(1)} aria-label="Next" data-testid="button-next"><SkipForward size={22} fill="currentColor" /></button>
@@ -253,7 +317,7 @@ function App() {
            {libraryView === 'queue' && <div className="mb-5"><p className="font-mono-custom text-[10px] uppercase tracking-[.15em] text-primary">Up next</p><p className="mt-2 text-sm text-white/45">The next songs in your current playlist</p></div>}
            {libraryView === 'library' && <>
              <div className="mt-6 flex items-center justify-between"><div className="flex gap-1 overflow-x-auto pb-1">{playlists.map((playlist) => <button key={playlist.id} onClick={() => setActivePlaylist(playlist.id)} className={`whitespace-nowrap rounded-full px-3 py-2 text-xs transition ${activePlaylist === playlist.id ? 'bg-primary text-primary-foreground' : 'bg-white/[.05] text-white/55 hover:text-white'}`} data-testid={`button-playlist-${playlist.id}`}>{playlist.name}</button>)}</div><div className="ml-2 flex shrink-0 gap-1"><button onClick={() => setAddPlaylistOpen(true)} className="rounded-full border border-white/10 p-2 text-primary" aria-label="Add playlist" data-testid="button-add-playlist"><Plus size={16} /></button>{editMode && activePlaylist !== 'p1' && <button onClick={() => setDeleteTarget(active)} className="rounded-full border border-white/10 p-2 text-red-300/70 hover:text-red-300" aria-label="Delete playlist" data-testid="button-delete-playlist"><Trash2 size={15} /></button>}</div></div>
-             <div className="mt-6 flex items-center justify-between"><span className="font-mono-custom text-[10px] uppercase tracking-[.15em] text-white/35">{queue.length} tracks</span><div className="flex items-center gap-2"><button onClick={() => { setEditMode((value) => !value); setQuery(''); setSort('recent'); }} className={`flex items-center gap-1 text-xs ${editMode ? 'text-primary' : 'text-white/40'}`} data-testid="button-edit-mode"><Edit3 size={13} /> {editMode ? 'Done' : 'Edit'}</button><select value={sort} onChange={(event) => setSort(event.target.value as typeof sort)} className="bg-transparent text-xs text-white/45 outline-none" aria-label="Sort tracks" data-testid="select-sort"><option value="recent" className="bg-[#071114]">Recent</option><option value="title" className="bg-[#071114]">Title</option><option value="artist" className="bg-[#071114]">Artist</option></select></div></div>
+              <div className="mt-6 flex items-center justify-between"><span className="font-mono-custom text-[10px] uppercase tracking-[.15em] text-white/35">{queue.length} tracks</span><div className="flex items-center gap-2"><button onClick={shuffleAndPlay} className="flex items-center gap-1 rounded-full border border-primary/30 bg-primary/[.08] px-3 py-2 text-xs text-primary transition hover:bg-primary/[.14]" data-testid="button-shuffle-play"><Shuffle size={13} /> Shuffle &amp; Play</button><button onClick={() => { setEditMode((value) => !value); setQuery(''); setSort('recent'); }} className={`flex items-center gap-1 text-xs ${editMode ? 'text-primary' : 'text-white/40'}`} data-testid="button-edit-mode"><Edit3 size={13} /> {editMode ? 'Done' : 'Edit'}</button><select value={sort} onChange={(event) => setSort(event.target.value as typeof sort)} className="bg-transparent text-xs text-white/45 outline-none" aria-label="Sort tracks" data-testid="select-sort"><option value="recent" className="bg-[#071114]">Recent</option><option value="title" className="bg-[#071114]">Title</option><option value="artist" className="bg-[#071114]">Artist</option></select></div></div>
              {editMode && <p className="mt-3 text-[10px] text-primary/60">{query || sort !== 'recent' ? 'Use the recent order to rearrange tracks.' : 'Press and hold a track, then drag it into a new position.'}</p>}
            </>}
            <div className="mt-4 space-y-1">{queue.length ? queue.map((song) => <div key={song.id} data-drag-song-id={song.id} onPointerDown={(event) => beginSongDrag(event, song.id)} className={`group flex items-center gap-3 rounded-xl border-t-2 p-2 transition hover:bg-white/[.04] ${song.id === current?.id ? 'bg-white/[.05]' : ''} ${draggingSongId === song.id ? 'scale-[.98] bg-primary/[.12] shadow-lg' : ''} ${dragOverSongId === song.id && draggingSongId !== song.id ? 'border-primary' : 'border-transparent'}`}><button className="flex min-w-0 flex-1 items-center gap-3 text-left" onClick={() => { if (suppressClickRef.current) return; chooseSong(song); setLibraryOpen(false); }} data-testid={`button-library-song-${song.id}`}><Cover song={song} size="sm" /><span className="min-w-0 flex-1"><span className={`block truncate text-sm ${song.id === current?.id ? 'text-primary' : 'text-white/80'}`}>{song.title}</span><span className="mt-0.5 block truncate text-xs text-white/35">{song.artist}</span></span><span className="font-mono-custom text-[10px] text-white/25">{formatTime(song.duration)}</span></button>{editMode && activePlaylist !== 'p1' && <button onClick={() => removeFromPlaylist(song.id)} className="rounded-lg p-2 text-white/30 hover:text-red-300" aria-label={`Remove ${song.title}`} data-testid={`button-remove-song-${song.id}`}><Trash2 size={15} /></button>}</div>) : <div className="rounded-2xl border border-dashed border-white/10 px-5 py-10 text-center"><ListMusic className="mx-auto text-white/25" size={28} /><p className="mt-3 text-sm text-white/50">Nothing here yet</p><p className="mt-1 text-xs text-white/30">Add tracks to this playlist from your collection.</p></div>}</div>
