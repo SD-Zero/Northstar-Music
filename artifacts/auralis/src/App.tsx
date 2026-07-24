@@ -1,11 +1,11 @@
-import { useEffect, useMemo, useRef, useState, type CSSProperties } from 'react';
+import { useEffect, useMemo, useRef, useState, type CSSProperties, type PointerEvent as ReactPointerEvent } from 'react';
 import { QueryClient, QueryClientProvider } from '@tanstack/react-query';
 import { TooltipProvider } from '@/components/ui/tooltip';
 import { Toaster } from '@/components/ui/toaster';
 import {
-  AudioLines, ChevronLeft, ChevronRight, Edit3,
+  AudioLines, Edit3,
   FileAudio, Heart, ListMusic, Menu, Pause, Play, Plus,
-  Repeat, Search, Settings2, Shuffle, SkipBack, SkipForward, SlidersHorizontal,
+  Repeat, Search, Shuffle, SkipBack, SkipForward, SlidersHorizontal,
   Trash2, Upload, Volume2, VolumeX, X, Check, LibraryBig
 } from 'lucide-react';
 
@@ -43,7 +43,7 @@ const readStorage = <T,>(key: string, fallback: T): T => {
 function Cover({ song, size = 'md', className = '' }: { song?: Song; size?: 'sm' | 'md' | 'lg'; className?: string }) {
   if (!song) return <div className={`cover-art ${className}`} style={{ '--cover-a': '#18343a', '--cover-b': '#2b5e61' } as CSSProperties} />;
   return (
-    <div className={`cover-art ${size === 'sm' ? 'w-12 h-12 rounded-xl' : size === 'lg' ? 'w-[min(61vw,382px)] h-[min(61vw,382px)] md:w-[min(43vw,440px)] md:h-[min(43vw,440px)] rounded-[2rem]' : 'w-20 h-20 rounded-2xl'} ${className}`}
+    <div className={`cover-art ${size === 'sm' ? 'w-12 h-12' : size === 'lg' ? 'w-[min(61vw,382px)] h-[min(61vw,382px)] md:w-[min(43vw,440px)] md:h-[min(43vw,440px)]' : 'w-20 h-20'} ${className}`}
       style={{ '--cover-a': song.coverA, '--cover-b': song.coverB } as CSSProperties} data-testid={`cover-${song.id}`}>
       <span className="cover-line" /><span className="cover-mark" />
       <span className="absolute bottom-4 left-4 z-[1] text-[9px] font-mono-custom tracking-[.25em] text-white/70">{song.album.toUpperCase()}</span>
@@ -72,7 +72,11 @@ function App() {
   const [toast, setToast] = useState('');
   const [localSongs, setLocalSongs] = useState<Song[]>(() => readStorage('auralis-songs', songs));
   const [selectedFile, setSelectedFile] = useState<File | null>(null);
+  const [draggingSongId, setDraggingSongId] = useState<string | null>(null);
+  const [dragOverSongId, setDragOverSongId] = useState<string | null>(null);
   const fileRef = useRef<HTMLInputElement>(null);
+  const dragRef = useRef<{ id: string; pointerId: number; moved: boolean } | null>(null);
+  const suppressClickRef = useRef(false);
 
   const current = localSongs.find((song) => song.id === currentId) || localSongs[0];
   const active = playlists.find((playlist) => playlist.id === activePlaylist) || playlists[0];
@@ -82,8 +86,8 @@ function App() {
     return [...filtered].sort((a, b) => sort === 'title' ? a.title.localeCompare(b.title) : sort === 'artist' ? a.artist.localeCompare(b.artist) : 0);
   }, [active, localSongs, query, sort]);
   const currentIndex = Math.max(0, queue.findIndex((song) => song.id === current?.id));
-  const previous = queue[(currentIndex - 1 + queue.length) % queue.length];
-  const next = queue[(currentIndex + 1) % queue.length];
+  const previous = currentIndex > 0 ? queue[currentIndex - 1] : undefined;
+  const next = currentIndex < queue.length - 1 ? queue[currentIndex + 1] : undefined;
 
   useEffect(() => { localStorage.setItem('auralis-playlists', JSON.stringify(playlists)); }, [playlists]);
   useEffect(() => { localStorage.setItem('auralis-songs', JSON.stringify(localSongs)); }, [localSongs]);
@@ -96,11 +100,62 @@ function App() {
     return () => window.clearInterval(timer);
   }, [isPlaying, current, next]);
   useEffect(() => { if (!toast) return; const timer = window.setTimeout(() => setToast(''), 2400); return () => window.clearTimeout(timer); }, [toast]);
+  useEffect(() => {
+    if (!draggingSongId) return;
+    const handlePointerMove = (event: PointerEvent) => {
+      const drag = dragRef.current;
+      if (!drag || drag.pointerId !== event.pointerId) return;
+      const distance = Math.hypot(event.movementX, event.movementY);
+      if (distance > 0) drag.moved = true;
+      const target = document.elementFromPoint(event.clientX, event.clientY)?.closest<HTMLElement>('[data-drag-song-id]');
+      if (target?.dataset.dragSongId && target.dataset.dragSongId !== draggingSongId) {
+        setDragOverSongId(target.dataset.dragSongId);
+      }
+    };
+    const handlePointerUp = (event: PointerEvent) => {
+      const drag = dragRef.current;
+      if (!drag || drag.pointerId !== event.pointerId) return;
+      if (drag.moved && dragOverSongId && dragOverSongId !== drag.id) {
+        setPlaylists((items) => items.map((item) => {
+          if (item.id !== activePlaylist) return item;
+          const ordered = [...item.songs];
+          const fromIndex = ordered.indexOf(drag.id);
+          const toIndex = ordered.indexOf(dragOverSongId);
+          if (fromIndex < 0 || toIndex < 0) return item;
+          ordered.splice(fromIndex, 1);
+          ordered.splice(toIndex, 0, drag.id);
+          return { ...item, songs: ordered };
+        }));
+        setToast('Playlist order saved');
+        suppressClickRef.current = true;
+        window.setTimeout(() => { suppressClickRef.current = false; }, 120);
+      }
+      dragRef.current = null;
+      setDraggingSongId(null);
+      setDragOverSongId(null);
+    };
+    window.addEventListener('pointermove', handlePointerMove);
+    window.addEventListener('pointerup', handlePointerUp);
+    window.addEventListener('pointercancel', handlePointerUp);
+    return () => {
+      window.removeEventListener('pointermove', handlePointerMove);
+      window.removeEventListener('pointerup', handlePointerUp);
+      window.removeEventListener('pointercancel', handlePointerUp);
+    };
+  }, [activePlaylist, dragOverSongId, draggingSongId]);
 
   const chooseSong = (song: Song) => { setCurrentId(song.id); setProgress(0); setIsPlaying(true); };
   const move = (direction: number) => {
-    const target = queue[(currentIndex + direction + queue.length) % queue.length];
+    const target = direction < 0 ? previous : next;
     if (target) chooseSong(target);
+  };
+  const beginSongDrag = (event: ReactPointerEvent<HTMLDivElement>, songId: string) => {
+    if (!editMode || Boolean(query) || sort !== 'recent') return;
+    event.preventDefault();
+    event.currentTarget.setPointerCapture(event.pointerId);
+    dragRef.current = { id: songId, pointerId: event.pointerId, moved: false };
+    setDraggingSongId(songId);
+    setDragOverSongId(songId);
   };
   const toggleFavorite = (songId: string) => {
     setLocalSongs((items) => items.map((song) => song.id === songId ? { ...song, favorite: !song.favorite } : song));
@@ -134,13 +189,12 @@ function App() {
       <div className="ambient-orb pointer-events-none absolute bottom-[-16rem] left-[-8rem] h-[34rem] w-[34rem] rounded-full bg-amber-300/[.05] blur-3xl" />
       <header className="relative z-10 flex items-center justify-between px-5 py-5 md:px-10 md:py-7">
         <div className="flex items-center gap-3">
-          <button className="flex h-11 w-11 items-center justify-center rounded-2xl border border-white/10 bg-white/[.05] text-white/70 transition hover:bg-white/10 md:hidden" onClick={() => setLibraryOpen(true)} aria-label="Open library" data-testid="button-open-library"><Menu size={19} /></button>
           <div className="flex items-center gap-2.5"><div className="flex h-8 w-8 items-center justify-center rounded-xl bg-primary text-primary-foreground"><AudioLines size={18} /></div><span className="font-display text-lg font-semibold tracking-tight">auralis</span></div>
           <span className="hidden border-l border-white/10 pl-4 text-[10px] font-mono-custom tracking-[.18em] text-white/35 md:inline">PRIVATE PLAYER / 01</span>
         </div>
         <div className="flex items-center gap-2">
           <span className="hidden items-center gap-2 rounded-full border border-white/10 bg-white/[.03] px-3 py-2 text-[10px] font-mono-custom text-white/45 md:flex"><span className="h-1.5 w-1.5 rounded-full bg-primary shadow-[0_0_12px_rgba(54,214,195,.8)]" /> LOCAL MODE</span>
-          <button className="flex h-10 w-10 items-center justify-center rounded-full text-white/55 transition hover:bg-white/10 hover:text-white" aria-label="Settings" data-testid="button-settings"><Settings2 size={18} /></button>
+          <button className="flex h-11 w-11 items-center justify-center rounded-2xl border border-white/10 bg-white/[.05] text-white/70 transition hover:bg-white/10 md:hidden" onClick={() => setLibraryOpen(true)} aria-label="Open library" data-testid="button-open-library"><Menu size={19} /></button>
         </div>
       </header>
 
@@ -151,19 +205,18 @@ function App() {
             <div className="hidden text-right md:block"><p className="font-mono-custom text-[10px] uppercase tracking-[.18em] text-white/35">Collection / {active?.name}</p><p className="mt-2 text-sm text-white/60">{queue.length} tracks · offline ready</p></div>
           </div>
           <div className="relative mt-10 flex min-h-[430px] items-center justify-center overflow-visible md:mt-14 md:min-h-[500px]">
-            <button className="group absolute left-0 z-[1] hidden w-[24%] max-w-[210px] -translate-x-2 items-center justify-center opacity-50 transition hover:opacity-80 md:flex" onClick={() => move(-1)} aria-label="Previous song" data-testid="button-carousel-previous">
+            {previous && <button className="group absolute left-0 z-[1] hidden w-[24%] max-w-[210px] -translate-x-2 -rotate-[9deg] items-center justify-center opacity-50 transition hover:rotate-[-7deg] hover:opacity-80 md:flex" onClick={() => move(-1)} aria-label="Previous song" data-testid="button-carousel-previous">
               <Cover song={previous} size="lg" className="scale-[.68] opacity-65 blur-[1px] transition group-hover:scale-[.72]" />
-              <span className="absolute bottom-2 max-w-[90%] truncate text-xs text-white/60">{previous?.title}</span>
-            </button>
+              <span className="absolute bottom-2 max-w-[90%] truncate text-xs text-white/60">{previous.title}</span>
+            </button>}
             <button className="absolute left-1/2 top-1/2 z-[2] -translate-x-1/2 -translate-y-1/2 transition duration-500 hover:scale-[1.015]" onClick={() => setIsPlaying(!isPlaying)} aria-label={isPlaying ? 'Pause' : 'Play'} data-testid="button-current-cover">
               <Cover song={current} size="lg" className="shadow-[0_28px_90px_rgba(17,171,161,.24)]" />
-              <span className="absolute inset-0 flex items-center justify-center rounded-[2rem] bg-black/0 transition group-hover:bg-black/10" />
+              <span className="absolute inset-0 flex items-center justify-center bg-black/0 transition group-hover:bg-black/10" />
             </button>
-            <button className="group absolute right-0 z-[1] hidden w-[24%] max-w-[210px] translate-x-2 items-center justify-center opacity-50 transition hover:opacity-80 md:flex" onClick={() => move(1)} aria-label="Next song" data-testid="button-carousel-next">
+            {next && <button className="group absolute right-0 z-[1] hidden w-[24%] max-w-[210px] translate-x-2 rotate-[9deg] items-center justify-center opacity-50 transition hover:rotate-[7deg] hover:opacity-80 md:flex" onClick={() => move(1)} aria-label="Next song" data-testid="button-carousel-next">
               <Cover song={next} size="lg" className="scale-[.68] opacity-65 blur-[1px] transition group-hover:scale-[.72]" />
-              <span className="absolute bottom-2 max-w-[90%] truncate text-xs text-white/60">{next?.title}</span>
-            </button>
-            <div className="absolute bottom-0 left-1/2 flex -translate-x-1/2 gap-2 md:hidden"><button onClick={() => move(-1)} className="rounded-full border border-white/10 p-2 text-white/50" aria-label="Previous song" data-testid="button-mobile-previous"><ChevronLeft size={16} /></button><button onClick={() => move(1)} className="rounded-full border border-white/10 p-2 text-white/50" aria-label="Next song" data-testid="button-mobile-next"><ChevronRight size={16} /></button></div>
+              <span className="absolute bottom-2 max-w-[90%] truncate text-xs text-white/60">{next.title}</span>
+            </button>}
           </div>
           <div className="mx-auto mt-9 max-w-[600px] text-center md:mt-11">
             <div className="flex items-start justify-center gap-3"><div><h2 className="font-display text-2xl font-semibold tracking-[-.04em] text-white md:text-3xl" data-testid="text-current-title">{current?.title}</h2><p className="mt-1 text-sm text-white/45" data-testid="text-current-artist">{current?.artist} <span className="mx-1 text-white/20">/</span> {current?.album}</p></div><button className={`mt-1 rounded-full p-2 transition ${current?.favorite ? 'text-primary' : 'text-white/30 hover:text-white'}`} onClick={() => current && toggleFavorite(current.id)} aria-label="Favorite song" data-testid="button-favorite"><Heart size={19} fill={current?.favorite ? 'currentColor' : 'none'} /></button></div>
@@ -192,13 +245,14 @@ function App() {
 
       <div className="fixed bottom-0 left-0 right-0 z-30 border-t border-white/[.08] bg-[#101d22]/90 px-5 py-3 backdrop-blur-xl lg:hidden safe-bottom"><div className="mx-auto flex max-w-xl items-center gap-3"><Cover song={current} size="sm" /><div className="min-w-0 flex-1"><p className="truncate text-sm text-white">{current?.title}</p><p className="truncate text-xs text-white/40">{current?.artist}</p></div><button onClick={() => setIsPlaying(!isPlaying)} className="flex h-10 w-10 items-center justify-center rounded-full bg-primary text-primary-foreground" aria-label={isPlaying ? 'Pause' : 'Play'} data-testid="button-mobile-play">{isPlaying ? <Pause size={17} fill="currentColor" /> : <Play size={17} fill="currentColor" />}</button></div></div>
       <button className={`fixed inset-0 z-40 bg-black/50 transition-opacity duration-300 ${libraryOpen ? 'opacity-100' : 'pointer-events-none opacity-0'}`} onClick={() => setLibraryOpen(false)} aria-label="Close library overlay" data-testid="button-close-overlay" />
-      <section className={`fixed right-0 top-0 z-50 flex h-full w-full max-w-[470px] flex-col border-l border-white/10 bg-[#122126] shadow-[-18px_0_60px_rgba(0,0,0,.35)] transition-transform duration-500 ${libraryOpen ? 'translate-x-0' : 'translate-x-full'}`}>
+       <section className={`fixed right-0 top-0 z-50 flex h-full w-full max-w-[470px] flex-col border-l border-white/10 bg-[#071114] shadow-[-18px_0_60px_rgba(0,0,0,.5)] transition-transform duration-500 ${libraryOpen ? 'translate-x-0' : 'translate-x-full'}`}>
         <div className="flex items-center justify-between border-b border-white/[.08] px-6 py-6"><div><p className="text-[10px] font-mono-custom uppercase tracking-[.2em] text-primary">Your collection</p><h2 className="mt-1 font-display text-2xl font-semibold">Library</h2></div><button className="rounded-full p-2 text-white/50 hover:bg-white/10 hover:text-white" onClick={() => setLibraryOpen(false)} aria-label="Close library" data-testid="button-close-library"><X size={20} /></button></div>
         <div className="flex-1 overflow-y-auto px-6 py-6">
           <div className="relative"><Search className="absolute left-3 top-1/2 -translate-y-1/2 text-white/30" size={16} /><input value={query} onChange={(event) => setQuery(event.target.value)} placeholder="Search your music" className="w-full rounded-xl border border-white/10 bg-white/[.04] py-3 pl-10 pr-4 text-sm text-white outline-none placeholder:text-white/30 focus:border-primary/60" aria-label="Search music" data-testid="input-search" /></div>
           <div className="mt-6 flex items-center justify-between"><div className="flex gap-1 overflow-x-auto pb-1">{playlists.map((playlist) => <button key={playlist.id} onClick={() => setActivePlaylist(playlist.id)} className={`whitespace-nowrap rounded-full px-3 py-2 text-xs transition ${activePlaylist === playlist.id ? 'bg-primary text-primary-foreground' : 'bg-white/[.05] text-white/55 hover:text-white'}`} data-testid={`button-playlist-${playlist.id}`}>{playlist.name}</button>)}</div><div className="ml-2 flex shrink-0 gap-1"><button onClick={() => setAddPlaylistOpen(true)} className="rounded-full border border-white/10 p-2 text-primary" aria-label="Add playlist" data-testid="button-add-playlist"><Plus size={16} /></button>{editMode && activePlaylist !== 'p1' && <button onClick={() => setDeleteTarget(active)} className="rounded-full border border-white/10 p-2 text-red-300/70 hover:text-red-300" aria-label="Delete playlist" data-testid="button-delete-playlist"><Trash2 size={15} /></button>}</div></div>
-          <div className="mt-6 flex items-center justify-between"><span className="font-mono-custom text-[10px] uppercase tracking-[.15em] text-white/35">{queue.length} tracks</span><div className="flex items-center gap-2"><button onClick={() => setEditMode(!editMode)} className={`flex items-center gap-1 text-xs ${editMode ? 'text-primary' : 'text-white/40'}`} data-testid="button-edit-mode"><Edit3 size={13} /> {editMode ? 'Done' : 'Edit'}</button><select value={sort} onChange={(event) => setSort(event.target.value as typeof sort)} className="bg-transparent text-xs text-white/45 outline-none" aria-label="Sort tracks" data-testid="select-sort"><option value="recent" className="bg-[#122126]">Recent</option><option value="title" className="bg-[#122126]">Title</option><option value="artist" className="bg-[#122126]">Artist</option></select></div></div>
-          <div className="mt-4 space-y-1">{queue.length ? queue.map((song) => <div key={song.id} className={`group flex items-center gap-3 rounded-xl p-2 transition hover:bg-white/[.04] ${song.id === current?.id ? 'bg-white/[.05]' : ''}`}><button className="flex min-w-0 flex-1 items-center gap-3 text-left" onClick={() => { chooseSong(song); setLibraryOpen(false); }} data-testid={`button-library-song-${song.id}`}><Cover song={song} size="sm" /><span className="min-w-0 flex-1"><span className={`block truncate text-sm ${song.id === current?.id ? 'text-primary' : 'text-white/80'}`}>{song.title}</span><span className="mt-0.5 block truncate text-xs text-white/35">{song.artist}</span></span><span className="font-mono-custom text-[10px] text-white/25">{formatTime(song.duration)}</span></button>{editMode && activePlaylist !== 'p1' && <button onClick={() => removeFromPlaylist(song.id)} className="rounded-lg p-2 text-white/30 hover:text-red-300" aria-label={`Remove ${song.title}`} data-testid={`button-remove-song-${song.id}`}><Trash2 size={15} /></button>}</div>) : <div className="rounded-2xl border border-dashed border-white/10 px-5 py-10 text-center"><ListMusic className="mx-auto text-white/25" size={28} /><p className="mt-3 text-sm text-white/50">Nothing here yet</p><p className="mt-1 text-xs text-white/30">Add tracks to this playlist from your collection.</p></div>}</div>
+           <div className="mt-6 flex items-center justify-between"><span className="font-mono-custom text-[10px] uppercase tracking-[.15em] text-white/35">{queue.length} tracks</span><div className="flex items-center gap-2"><button onClick={() => { setEditMode((value) => !value); setQuery(''); setSort('recent'); }} className={`flex items-center gap-1 text-xs ${editMode ? 'text-primary' : 'text-white/40'}`} data-testid="button-edit-mode"><Edit3 size={13} /> {editMode ? 'Done' : 'Edit'}</button><select value={sort} onChange={(event) => setSort(event.target.value as typeof sort)} className="bg-transparent text-xs text-white/45 outline-none" aria-label="Sort tracks" data-testid="select-sort"><option value="recent" className="bg-[#071114]">Recent</option><option value="title" className="bg-[#071114]">Title</option><option value="artist" className="bg-[#071114]">Artist</option></select></div></div>
+           {editMode && <p className="mt-3 text-[10px] text-primary/60">{query || sort !== 'recent' ? 'Use the recent order to rearrange tracks.' : 'Press and hold a track, then drag it into a new position.'}</p>}
+           <div className="mt-4 space-y-1">{queue.length ? queue.map((song) => <div key={song.id} data-drag-song-id={song.id} onPointerDown={(event) => beginSongDrag(event, song.id)} className={`group flex items-center gap-3 rounded-xl border-t-2 p-2 transition hover:bg-white/[.04] ${song.id === current?.id ? 'bg-white/[.05]' : ''} ${draggingSongId === song.id ? 'scale-[.98] bg-primary/[.12] shadow-lg' : ''} ${dragOverSongId === song.id && draggingSongId !== song.id ? 'border-primary' : 'border-transparent'}`}><button className="flex min-w-0 flex-1 items-center gap-3 text-left" onClick={() => { if (suppressClickRef.current) return; chooseSong(song); setLibraryOpen(false); }} data-testid={`button-library-song-${song.id}`}><Cover song={song} size="sm" /><span className="min-w-0 flex-1"><span className={`block truncate text-sm ${song.id === current?.id ? 'text-primary' : 'text-white/80'}`}>{song.title}</span><span className="mt-0.5 block truncate text-xs text-white/35">{song.artist}</span></span><span className="font-mono-custom text-[10px] text-white/25">{formatTime(song.duration)}</span></button>{editMode && activePlaylist !== 'p1' && <button onClick={() => removeFromPlaylist(song.id)} className="rounded-lg p-2 text-white/30 hover:text-red-300" aria-label={`Remove ${song.title}`} data-testid={`button-remove-song-${song.id}`}><Trash2 size={15} /></button>}</div>) : <div className="rounded-2xl border border-dashed border-white/10 px-5 py-10 text-center"><ListMusic className="mx-auto text-white/25" size={28} /><p className="mt-3 text-sm text-white/50">Nothing here yet</p><p className="mt-1 text-xs text-white/30">Add tracks to this playlist from your collection.</p></div>}</div>
         </div>
         <div className="border-t border-white/[.08] px-6 py-5"><button onClick={() => setImportOpen(true)} className="flex w-full items-center justify-center gap-2 rounded-xl border border-dashed border-primary/40 bg-primary/[.06] py-3 text-sm text-primary transition hover:bg-primary/10" data-testid="button-import-audio"><Upload size={16} /> Import local audio</button><p className="mt-2 text-center text-[10px] text-white/25">Files stay on this device. Nothing is uploaded.</p></div>
       </section>
