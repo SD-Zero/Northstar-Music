@@ -265,7 +265,6 @@ function App() {
       <header className="relative z-10 flex items-center justify-between px-5 py-5 md:px-10 md:py-7">
         <div className="flex items-center gap-3">
           <div className="flex items-center gap-2.5"><div className="flex h-8 w-8 items-center justify-center rounded-xl bg-primary text-primary-foreground"><AudioLines size={18} /></div><span className="font-display text-lg font-semibold tracking-tight">auralis</span></div>
-          <span className="hidden border-l border-white/10 pl-4 text-[10px] font-mono-custom tracking-[.18em] text-white/35 md:inline">PRIVATE PLAYER / 01</span>
         </div>
         <div className="flex items-center gap-2">
           <button className="flex h-11 w-11 items-center justify-center rounded-2xl border border-white/10 bg-white/[.05] text-white/70 transition hover:bg-white/10 hover:text-white" onClick={() => openLibraryView('library')} aria-label="Open menu" data-testid="button-open-library"><Menu size={19} /></button>
@@ -274,7 +273,7 @@ function App() {
 
       <main className="relative z-10 mx-auto max-w-[1380px] px-5 pb-32 md:px-10 lg:pb-14">
         <section className="min-w-0">
-          <div className="mt-4 flex items-end justify-between md:mt-10">
+          <div className="mt-0 flex items-end justify-between">
             <div className="rise-in"><p className="mb-3 text-[10px] font-mono-custom uppercase tracking-[.24em] text-primary">Now playing</p></div>
           </div>
           <div className="relative mt-10 flex min-h-[430px] items-center justify-center overflow-visible md:mt-14 md:min-h-[500px]">
