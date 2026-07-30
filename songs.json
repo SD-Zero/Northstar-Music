@@ -1,0 +1,35 @@
+[
+  {
+    "id": "tdg-pain",
+    "title": "Pain",
+    "artist": "Three Days Grace",
+    "album": "One-X",
+    "duration": 213,
+    "year": "2006",
+    "genre": "Rock",
+    "coverUrl": "https://i.imgur.com/yourcover1.jpg",
+    "audioUrl": "https://your-cdn.com/three-days-grace-pain.mp3"
+  },
+  {
+    "id": "ip-breaking-down",
+    "title": "Breaking Down",
+    "artist": "I Prevail",
+    "album": "Lifelines",
+    "duration": 198,
+    "year": "2016",
+    "genre": "Rock",
+    "coverUrl": "https://i.imgur.com/yourcover2.jpg",
+    "audioUrl": "https://your-cdn.com/i-prevail-breaking-down.mp3"
+  },
+  {
+    "id": "starset-my-demons",
+    "title": "My Demons",
+    "artist": "STARSET",
+    "album": "Transmissions",
+    "duration": 237,
+    "year": "2014",
+    "genre": "Rock",
+    "coverUrl": "https://i.imgur.com/yourcover3.jpg",
+    "audioUrl": "https://your-cdn.com/starset-my-demons.mp3"
+  }
+]
