@@ -360,7 +360,7 @@ function App() {
       <div className="ambient-orb pointer-events-none absolute bottom-[-16rem] left-[-8rem] h-[34rem] w-[34rem] rounded-full bg-amber-300/[.05] blur-3xl" />
       <header className="relative z-10 flex items-center justify-between px-5 py-5 md:px-10 md:py-7">
           <div className="flex items-center gap-3">
-           <img src="/auralis-mark.png" alt="Northstar" className="h-12 w-[min(42vw,150px)] origin-left scale-[1.65] object-contain object-left" />
+           <img src={`${import.meta.env.BASE_URL}auralis-mark.png`} alt="Northstar" className="h-12 w-[min(42vw,150px)] origin-left scale-[1.65] object-contain object-left" />
         </div>
         <div className="flex items-center gap-2">
           <button className="flex h-11 w-11 items-center justify-center rounded-2xl border border-white/10 bg-white/[.05] text-white/70 transition hover:bg-white/10 hover:text-white" onClick={() => openLibraryView('library')} aria-label="Open menu" data-testid="button-open-library"><Menu size={19} /></button>

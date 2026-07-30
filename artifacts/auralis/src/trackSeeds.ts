@@ -160,4 +160,4 @@ const parseTrack = (row: string, index: number): TrackSeed => {
   };
 };
 
-export const requestedSongSeeds = requestedTracks.map(parseTrack);
+export const requestedSongSeeds: TrackSeed[] = [];
