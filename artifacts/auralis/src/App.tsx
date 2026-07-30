@@ -17,15 +17,12 @@ type Song = {
 type Playlist = { id: string; name: string; songs: string[]; accent: string };
 type LibraryView = 'queue' | 'library';
 
-// Bump this version string whenever a hard reset of stored data is needed.
-const STORAGE_VERSION = 'v3-empty';
-const wipeIfStale = () => {
-  if (localStorage.getItem('auralis-storage-version') !== STORAGE_VERSION) {
-    ['auralis-songs', 'auralis-playlists'].forEach((k) => localStorage.removeItem(k));
-    localStorage.setItem('auralis-storage-version', STORAGE_VERSION);
-  }
-};
-wipeIfStale();
+// Clear all persisted song/playlist data on every load until songs.json sync is wired up.
+(() => {
+  Object.keys(localStorage)
+    .filter((k) => k.startsWith('auralis-'))
+    .forEach((k) => localStorage.removeItem(k));
+})();
 
 const defaultSongs: Song[] = [];
 const initialPlaylists: Playlist[] = [
@@ -35,24 +32,8 @@ const initialPlaylists: Playlist[] = [
 
 const queryClient = new QueryClient();
 const formatTime = (seconds: number) => `${Math.floor(seconds / 60)}:${String(Math.floor(seconds % 60)).padStart(2, '0')}`;
-const readStorage = <T,>(key: string, fallback: T): T => {
-  try { const stored = localStorage.getItem(key); return stored ? JSON.parse(stored) as T : fallback; } catch { return fallback; }
-};
-const readSongs = (): Song[] => readStorage<Song[]>('auralis-songs', []);
-const readPlaylists = (): Playlist[] => {
-  const stored = readStorage<Playlist[]>('auralis-playlists', initialPlaylists);
-  const storedSongs = readSongs();
-  const validSongIds = new Set(storedSongs.map((song) => song.id));
-  const customPlaylists = stored.filter((playlist) => playlist.id !== 'p1' && playlist.id !== 'p2').map((playlist) => ({
-    ...playlist,
-    songs: playlist.songs.filter((songId) => validSongIds.has(songId)),
-  }));
-  return [
-    { ...initialPlaylists[0], songs: storedSongs.map((song) => song.id) },
-    { ...initialPlaylists[1], songs: storedSongs.filter((song) => song.favorite).map((song) => song.id) },
-    ...customPlaylists,
-  ];
-};
+const readSongs = (): Song[] => [];
+const readPlaylists = (): Playlist[] => initialPlaylists;
 const fileToDataUrl = (file: File): Promise<string> => new Promise((resolve, reject) => {
   const reader = new FileReader();
   reader.onload = () => resolve(String(reader.result));
