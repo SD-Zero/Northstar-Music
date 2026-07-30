@@ -17,11 +17,20 @@ type Song = {
 type Playlist = { id: string; name: string; songs: string[]; accent: string };
 type LibraryView = 'queue' | 'library';
 
-const placeholderSongIds = new Set(['s1', 's2', 's3', 's4', 's5', 's6', 's7', 's8', 's9']);
-const defaultSongs: Song[] = requestedSongSeeds;
+// Bump this version string whenever a hard reset of stored data is needed.
+const STORAGE_VERSION = 'v3-empty';
+const wipeIfStale = () => {
+  if (localStorage.getItem('auralis-storage-version') !== STORAGE_VERSION) {
+    ['auralis-songs', 'auralis-playlists'].forEach((k) => localStorage.removeItem(k));
+    localStorage.setItem('auralis-storage-version', STORAGE_VERSION);
+  }
+};
+wipeIfStale();
+
+const defaultSongs: Song[] = [];
 const initialPlaylists: Playlist[] = [
-  { id: 'p1', name: 'All songs', songs: defaultSongs.map((s) => s.id), accent: '#36d6c3' },
-  { id: 'p2', name: 'Favorites', songs: defaultSongs.filter((s) => s.favorite).map((s) => s.id), accent: '#f2b66d' },
+  { id: 'p1', name: 'All songs', songs: [], accent: '#36d6c3' },
+  { id: 'p2', name: 'Favorites', songs: [], accent: '#f2b66d' },
 ];
 
 const queryClient = new QueryClient();
@@ -29,14 +38,7 @@ const formatTime = (seconds: number) => `${Math.floor(seconds / 60)}:${String(Ma
 const readStorage = <T,>(key: string, fallback: T): T => {
   try { const stored = localStorage.getItem(key); return stored ? JSON.parse(stored) as T : fallback; } catch { return fallback; }
 };
-const readSongs = (): Song[] => {
-  const stored = readStorage<Song[]>('auralis-songs', []);
-  const cleanedStored = stored.filter((song) => !placeholderSongIds.has(song.id));
-  const storedById = new Map(cleanedStored.map((song) => [song.id, song]));
-  return defaultSongs.map((song) => storedById.get(song.id) || song).concat(
-    cleanedStored.filter((song) => !defaultSongs.some((defaultSong) => defaultSong.id === song.id)),
-  );
-};
+const readSongs = (): Song[] => readStorage<Song[]>('auralis-songs', []);
 const readPlaylists = (): Playlist[] => {
   const stored = readStorage<Playlist[]>('auralis-playlists', initialPlaylists);
   const storedSongs = readSongs();
