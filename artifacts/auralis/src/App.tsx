@@ -214,7 +214,6 @@ function App() {
         setProgress(Math.max(0, Math.min(current?.duration || currentTime, currentTime)));
       }
       if (playerState === 1) setIsPlaying(true);
-      if (playerState === 2) setIsPlaying(false);
       if (playerState === 0) {
         if (repeat && current) chooseSong(current);
         else if (next) chooseSong(next);
@@ -260,7 +259,8 @@ function App() {
     }
 
     const seekTo = (seconds: number) => {
-      if (seconds >= current.duration - 1 && next) {
+      const endThreshold = Math.max(2, current.duration * 0.02);
+      if (seconds >= current.duration - endThreshold && next) {
         chooseSong(next);
         return;
       }
@@ -294,19 +294,6 @@ function App() {
       });
     };
   }, [current, isPlaying, next, previous, progress]);
-  useEffect(() => {
-    if (!isPlaying || !current) return;
-    const timer = window.setInterval(() => setProgress((value) => {
-       if (value >= current.duration) {
-         if (repeat) { setCurrentId(current.id); return 0; }
-         if (next) { setCurrentId(next.id); return 0; }
-         setIsPlaying(false);
-         return value;
-       }
-      return value + 1;
-    }), 1000);
-    return () => window.clearInterval(timer);
-   }, [isPlaying, current, next, repeat]);
   useEffect(() => { if (!toast) return; const timer = window.setTimeout(() => setToast(''), 2400); return () => window.clearTimeout(timer); }, [toast]);
   useEffect(() => {
     if (!draggingSongId) return;
