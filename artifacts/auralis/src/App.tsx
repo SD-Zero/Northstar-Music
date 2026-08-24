@@ -129,6 +129,7 @@ function App() {
   const [currentId, setCurrentId] = useState('s1');
   const [isPlaying, setIsPlaying] = useState(false);
   const [progress, setProgress] = useState(0);
+  const [youtubeDuration, setYoutubeDuration] = useState<number | null>(null);
   const [libraryOpen, setLibraryOpen] = useState(false);
   const [libraryView, setLibraryView] = useState<LibraryView>('library');
   const [query, setQuery] = useState('');
@@ -179,6 +180,7 @@ function App() {
   const previous = currentIndex > 0 ? queue[currentIndex - 1] : undefined;
   const next = currentIndex < queue.length - 1 ? queue[currentIndex + 1] : undefined;
   const currentYoutubeId = youtubeVideoId(current?.audioUrl);
+  const trackDuration = youtubeDuration || current?.duration || 1;
   const sendYoutubeCommand = (func: string, args: unknown[] = []) => {
     youtubePlayerRef.current?.contentWindow?.postMessage(JSON.stringify({
       event: 'command',
@@ -192,6 +194,7 @@ function App() {
   useEffect(() => { localStorage.setItem('auralis-songs', JSON.stringify(localSongs)); }, [localSongs]);
   useEffect(() => {
     setProgress(0);
+    setYoutubeDuration(null);
   }, [currentId]);
   useEffect(() => {
     if (!currentYoutubeId) return;
@@ -209,9 +212,12 @@ function App() {
         return;
       }
       if (message?.event !== 'infoDelivery' || !message.info) return;
-      const { currentTime, playerState } = message.info;
+      const { currentTime, duration, playerState } = message.info;
+      if (typeof duration === 'number' && Number.isFinite(duration) && duration > 0) {
+        setYoutubeDuration(duration);
+      }
       if (typeof currentTime === 'number' && Number.isFinite(currentTime)) {
-        setProgress(Math.max(0, Math.min(current?.duration || currentTime, currentTime)));
+        setProgress(Math.max(0, Math.min(youtubeDuration || current?.duration || currentTime, currentTime)));
       }
       if (playerState === 1) setIsPlaying(true);
       if (playerState === 0) {
@@ -235,7 +241,7 @@ function App() {
       window.removeEventListener('message', handleYoutubeMessage);
       window.clearTimeout(retry);
     };
-  }, [currentYoutubeId]);
+  }, [currentYoutubeId, youtubeDuration]);
   useEffect(() => {
     if (!currentYoutubeId) return;
     sendYoutubeCommand(isPlaying ? 'playVideo' : 'pauseVideo');
@@ -250,21 +256,22 @@ function App() {
     navigator.mediaSession.playbackState = isPlaying ? 'playing' : 'paused';
     try {
       navigator.mediaSession.setPositionState({
-        duration: Math.max(1, current.duration),
+        duration: Math.max(1, youtubeDuration || current.duration),
         playbackRate: 1,
-        position: Math.max(0, Math.min(current.duration, progress)),
+        position: Math.max(0, Math.min(youtubeDuration || current.duration, progress)),
       });
     } catch {
       // Older Safari versions may not implement position state.
     }
 
     const seekTo = (seconds: number) => {
-      const endThreshold = Math.max(2, current.duration * 0.02);
-      if (seconds >= current.duration - endThreshold && next) {
+      const duration = youtubeDuration || current.duration;
+      const endThreshold = Math.max(2, duration * 0.02);
+      if (seconds >= duration - endThreshold && next) {
         chooseSong(next);
         return;
       }
-      const nextProgress = Math.max(0, Math.min(current.duration, seconds));
+      const nextProgress = Math.max(0, Math.min(duration, seconds));
       setProgress(nextProgress);
       sendYoutubeCommand('seekTo', [nextProgress, true]);
     };
@@ -293,7 +300,7 @@ function App() {
         }
       });
     };
-  }, [current, isPlaying, next, previous, progress]);
+  }, [current, isPlaying, next, previous, progress, youtubeDuration]);
   useEffect(() => { if (!toast) return; const timer = window.setTimeout(() => setToast(''), 2400); return () => window.clearTimeout(timer); }, [toast]);
   useEffect(() => {
     if (!draggingSongId) return;
@@ -516,8 +523,8 @@ function App() {
           <div className="mx-auto mt-2 max-w-[600px] text-center md:mt-3">
             <div className="flex items-start justify-center gap-3"><div><h2 className="font-display text-2xl font-semibold tracking-[-.04em] text-white md:text-3xl" data-testid="text-current-title">{current?.title}</h2><p className="mt-1 text-sm text-white/45" data-testid="text-current-artist">{current?.artist} <span className="mx-1 text-white/20">/</span> {current?.album}</p></div><button className={`mt-1 rounded-full p-2 transition ${current?.favorite ? 'text-primary' : 'text-white/30 hover:text-white'}`} onClick={() => current && toggleFavorite(current.id)} aria-label="Favorite song" data-testid="button-favorite"><Heart size={19} fill={current?.favorite ? 'currentColor' : 'none'} /></button></div>
               <div className="mt-3 md:mt-4">
-               <div className="group relative"><input aria-label="Seek song" data-testid="input-progress" type="range" min="0" max={current?.duration || 1} value={progress} onChange={(event) => { const seconds = Number(event.target.value); setProgress(seconds); sendYoutubeCommand('seekTo', [seconds, true]); }} className="h-1 w-full cursor-pointer appearance-none rounded-full bg-white/10" style={{ background: `linear-gradient(to right, hsl(var(--primary)) ${(progress / (current?.duration || 1)) * 100}%, rgba(255,255,255,.1) 0)` }} /><div className="pointer-events-none absolute -top-1 h-3 w-3 rounded-full bg-primary opacity-0 shadow-[0_0_14px_rgba(54,214,195,.9)] transition-opacity group-hover:opacity-100" style={{ left: `calc(${(progress / (current?.duration || 1)) * 100}% - 6px)` }} /></div>
-              <div className="mt-2 flex justify-between font-mono-custom text-[10px] text-white/35"><span>{formatTime(progress)}</span><span>{formatTime(current?.duration || 0)}</span></div>
+               <div className="group relative"><input aria-label="Seek song" data-testid="input-progress" type="range" min="0" max={trackDuration} value={Math.min(progress, trackDuration)} onChange={(event) => { const seconds = Number(event.target.value); setProgress(seconds); sendYoutubeCommand('seekTo', [seconds, true]); }} className="h-1 w-full cursor-pointer appearance-none rounded-full bg-white/10" style={{ background: `linear-gradient(to right, hsl(var(--primary)) ${(progress / trackDuration) * 100}%, rgba(255,255,255,.1) 0)` }} /><div className="pointer-events-none absolute -top-1 h-3 w-3 rounded-full bg-primary opacity-0 shadow-[0_0_14px_rgba(54,214,195,.9)] transition-opacity group-hover:opacity-100" style={{ left: `calc(${(progress / trackDuration) * 100}% - 6px)` }} /></div>
+              <div className="mt-2 flex justify-between font-mono-custom text-[10px] text-white/35"><span>{formatTime(progress)}</span><span>{formatTime(trackDuration)}</span></div>
             </div>
              <div className="mt-3 flex items-center justify-center gap-5 md:mt-4 md:gap-8">
                <button className={`transition ${shuffle ? 'text-primary' : 'text-white/40 hover:text-white'}`} onClick={toggleShuffle} aria-label={shuffle ? 'Restore playlist order' : 'Shuffle queue'} data-testid="button-shuffle"><Shuffle size={18} /></button>
