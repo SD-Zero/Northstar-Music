@@ -17,14 +17,7 @@ type Song = {
 type Playlist = { id: string; name: string; songs: string[]; accent: string };
 type LibraryView = 'queue' | 'library';
 
-// Clear all persisted song/playlist data on every load until songs.json sync is wired up.
-(() => {
-  Object.keys(localStorage)
-    .filter((k) => k.startsWith('auralis-'))
-    .forEach((k) => localStorage.removeItem(k));
-})();
-
-const defaultSongs: Song[] = [];
+const defaultSongs: Song[] = requestedSongSeeds;
 const initialPlaylists: Playlist[] = [
   { id: 'p1', name: 'All songs', songs: [], accent: '#36d6c3' },
   { id: 'p2', name: 'Favorites', songs: [], accent: '#f2b66d' },
@@ -32,8 +25,34 @@ const initialPlaylists: Playlist[] = [
 
 const queryClient = new QueryClient();
 const formatTime = (seconds: number) => `${Math.floor(seconds / 60)}:${String(Math.floor(seconds % 60)).padStart(2, '0')}`;
-const readSongs = (): Song[] => [];
-const readPlaylists = (): Playlist[] => initialPlaylists;
+const readStorage = <T,>(key: string, fallback: T): T => {
+  try {
+    const stored = localStorage.getItem(key);
+    return stored ? JSON.parse(stored) as T : fallback;
+  } catch {
+    return fallback;
+  }
+};
+const readSongs = (): Song[] => {
+  const stored = readStorage<Song[]>('auralis-songs', []);
+  return stored.length ? stored : defaultSongs;
+};
+const readPlaylists = (): Playlist[] => {
+  const stored = readStorage<Playlist[]>(`auralis-playlists`, initialPlaylists);
+  const storedSongs = readSongs();
+  const validSongIds = new Set(storedSongs.map((song) => song.id));
+  const customPlaylists = stored
+    .filter((playlist) => playlist.id !== 'p1' && playlist.id !== 'p2')
+    .map((playlist) => ({
+      ...playlist,
+      songs: playlist.songs.filter((songId) => validSongIds.has(songId)),
+    }));
+  return [
+    { ...initialPlaylists[0], songs: storedSongs.map((song) => song.id) },
+    { ...initialPlaylists[1], songs: storedSongs.filter((song) => song.favorite).map((song) => song.id) },
+    ...customPlaylists,
+  ];
+};
 const fileToDataUrl = (file: File): Promise<string> => new Promise((resolve, reject) => {
   const reader = new FileReader();
   reader.onload = () => resolve(String(reader.result));

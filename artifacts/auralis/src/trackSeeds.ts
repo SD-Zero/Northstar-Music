@@ -8,156 +8,1532 @@ export type TrackSeed = {
   year: string;
   coverA: string;
   coverB: string;
+  audioUrl: string;
 };
 
-const requestedTracks = `
-Three Days Grace - Last to Know
-Three Days Grace - The Good Life
-Three Days Grace - Break
-Versus Me · James Arthur Milbrandt · Lee Alan Milbrandt · Joshua Alan Johnson · Dustin Hansen - Terrified
-I Prevail - Breaking Down
-I Prevail - Paranoid
-I Prevail - Hurricane
-I Prevail · Delaney Jane - Every Time You Leave
-I Prevail - I Don't Belong Here
-I Prevail - Let Me Be Sad
-Three Days Grace - Pain
-Three Days Grace - Animal I Have Become
-Three Days Grace - Riot
-Three Days Grace - Over and Over
-Three Days Grace - Get Out Alive
-Solence - Paralyzed
-Solence - Direction
-Solence - All of the Pain Must Go
-Memphis May Fire - Make Believe
-Memphis May Fire - Somebody
-Memphis May Fire - The Fight Within
-Memphis May Fire - Your Turn
-Falling In Reverse - Voices In My Head
-Falling in Reverse (feat Saraya): Bad Guy (Radio Edit)
-CANTERVICE - Doomsday
-Red - Breathe Into Me
-Wage War - Circle The Drain
-Asking Alexandria - Into The Fire
-System Of A Down - Chop Suey!
-Thriller Records · The Word Alive · Bad Omens - One Of Us
-Three Days Grace - Mayday
-All Time Low - Sleepwalking
-SCATTERBRAIN - FAST LANE
-Social Repose - After Dark
-The Plague - Danger
-Citizen Soldier - I Hate Myself
-Saint Asonia - Devastate
-I Prevail - Scars
-I Prevail - Stuck In Your Head
-Sleep Theory - Numb
-Theory Of A Deadman - Rx (Medicate)
-All Time Low · blackbear - Monsters (feat. blackbear)
-I Prevail - My Heart I Surrender
-I Prevail - Blank Space
-Memphis May Fire - Grenade
-Set It Off - Creating Monsters
-Memphis May Fire - Paralyzed
-Smash Into Pieces · Benjamin Jennebo · Chris Adam Sörbye Hedman · Philip Strand - Afterglow
-THE DEFECT - RUN | Lyrics
-ALESTI · Rory Rodriguez - Take the Pain Away (feat. Rory Rodriguez)
-ALESTI · Anxxiety · Anxxiety - Dissipate (feat. Anxxiety)
-ALESTI · James DeBerg · James DeBerg · Joey Sturgis - Paralyzed (feat. James DeBerg)
-STARSET - Halo
-Solence - Better This Way
-Solence - Claustrophobia
-Solence - Endless
-Ty Trehern · Ty Trehern - Fall With Me
-Bad Wolves - Zombie
-Nate Vickers - A Little Too Late
-STARSET - My Demons
-Silos · From Ashes to New · Judge & Jury - IF I FALL!
-Silos · Judge & Jury - Impossible
-elijah - guilty
-I Prevail - There’s Fear In Letting Go
-I Prevail - Bad Things
-I Prevail - Fake
-I Prevail - The Negative
-I Prevail - Deep End
-Thriller Records · If Not For Me - Demons
-Citizen Soldier - Pretend My Pain Away
-Citizen Soldier - Irreplaceable
-Shallowsky · Jon Eberhard · Brian Stephens - Delete Me
-Shallowsky · Jon Eberhard · Brian Stephens - Artificial Paradigm
-Shallowsky · Jon Eberhard · Brian Stephens - Cryptid
-Shallowsky - DRKPLCS
-Memphis May Fire - The Other Side
-Memphis May Fire - Hell Is Empty
-Memphis May Fire - Infection
-Skillet - The Resistance
-Memphis May Fire - Love Is War
-Soul Extract - Innerspace
-Smash Into Pieces · Benjamin Jennebo · Chris Adam Sörbye Hedman · Per Bergqvist · Andreas Lindbergh · Linnea Deb · Joy Deb · Jimmy Joker - Six Feet Under
-Essenger · Cryoshell - As Above, So Below
-STARSET - Satellite
-STARSET - DIE FOR YOU
-STARSET - Monster
-Sleep Theory - Static
-Citizen Soldier - Isolate
-Illenium x Excision feat. I Prevail - Feel Something (Elusios Edit)
-The Plague - Antidote
-Andromida · Beyond Unbroken - Break the Cycle
-Jeris Johnson - When The Darkness Comes
-Evans Blue - Beyond The Stars
-Citizen Soldier - Strong for Somebody Else
-Citizen Soldier - My Own Miracle
-Sleep Theory - Fallout
-Wage War - Gravity
-The Amity Affliction - Drag the Lake
-Skillet - Awake and Alive
-Breaking Benjamin - The Diary of Jane (Single Version)
-From Ashes to New - Die For You
-THE DAY WE LEFT EARTH · Martin Bjerke · Simen Handeland - MELANCHOLIA
-NOTHING MORE - IF IT DOESN'T HURT
-The Plot In You - FEEL NOTHING (RESET)
-Bring Me The Horizon - Blasphemy
-Bring Me The Horizon - Follow You
-Citizen Soldier - Thank You for Hating Me
-Skillet - Psycho In My Head
-Ashes Remain · Joshua Smith · Ryan Nalepa · Benjamin Kirk · Jonathan Hively · Robert Tahan · Seth Mosley - On My Own
-Ashes Remain · Joshua Smith · Ryan Nalepa · Benjamin Kirk · Jonathan Hively · Robert Tahan · Brian Hitt - End of Me
-Falling In Reverse - Trigger Warning
-Linkin Park - What I've Done
-Bring Me The Horizon- Throne (Audio)
-we are empire starset no scream edit endfield
-SCATTERBRAIN - BITTER
-Muse - Shimmering Scars
-`.trim().split('\n');
-
-const coverPairs = [
-  ['#214a55', '#62d4c8'],
-  ['#3c315f', '#d48aa6'],
-  ['#5a3c2d', '#e4a66d'],
-  ['#1e4e68', '#7bafd0'],
-  ['#394d39', '#d8c56a'],
-  ['#522e3e', '#e27e8e'],
+export const requestedSongSeeds: TrackSeed[] = [
+  {
+    "id": "imported-001",
+    "title": "Artificial Life",
+    "artist": "Andromida",
+    "album": "Imported album",
+    "duration": 210,
+    "genre": "Imported",
+    "year": "2026",
+    "coverA": "#214a55",
+    "coverB": "#62d4c8",
+    "audioUrl": "https://www.youtube.com/watch?v=ocSvGZsupzU"
+  },
+  {
+    "id": "imported-002",
+    "title": "Last to Know -",
+    "artist": "Three Days Grace",
+    "album": "Imported album",
+    "duration": 210,
+    "genre": "Imported",
+    "year": "2026",
+    "coverA": "#3c315f",
+    "coverB": "#d48aa6",
+    "audioUrl": "https://www.youtube.com/watch?v=1Gagc_37TUM"
+  },
+  {
+    "id": "imported-003",
+    "title": "The Good Life",
+    "artist": "Three Days Grace",
+    "album": "Imported album",
+    "duration": 210,
+    "genre": "Imported",
+    "year": "2026",
+    "coverA": "#5a3c2d",
+    "coverB": "#e4a66d",
+    "audioUrl": "https://www.youtube.com/watch?v=TcpUF5bidoY"
+  },
+  {
+    "id": "imported-004",
+    "title": "Break",
+    "artist": "Three Days Grace",
+    "album": "Imported album",
+    "duration": 210,
+    "genre": "Imported",
+    "year": "2026",
+    "coverA": "#1e4e68",
+    "coverB": "#7bafd0",
+    "audioUrl": "https://www.youtube.com/watch?v=3K7l8-GmkVw"
+  },
+  {
+    "id": "imported-005",
+    "title": "Terrified",
+    "artist": "Versus Me · James Arthur Milbrandt · Lee Alan Milbrandt · Joshua Alan Johnson · Dustin Hansen",
+    "album": "Imported album",
+    "duration": 210,
+    "genre": "Imported",
+    "year": "2026",
+    "coverA": "#394d39",
+    "coverB": "#d8c56a",
+    "audioUrl": "https://www.youtube.com/watch?v=I_whequxg7c"
+  },
+  {
+    "id": "imported-006",
+    "title": "Breaking Down",
+    "artist": "I Prevail",
+    "album": "Imported album",
+    "duration": 210,
+    "genre": "Imported",
+    "year": "2026",
+    "coverA": "#522e3e",
+    "coverB": "#e27e8e",
+    "audioUrl": "https://www.youtube.com/watch?v=3o8m8uCJsaU"
+  },
+  {
+    "id": "imported-007",
+    "title": "Paranoid",
+    "artist": "I Prevail",
+    "album": "Imported album",
+    "duration": 210,
+    "genre": "Imported",
+    "year": "2026",
+    "coverA": "#214a55",
+    "coverB": "#62d4c8",
+    "audioUrl": "https://www.youtube.com/watch?v=xMA-v7Wwv9Q"
+  },
+  {
+    "id": "imported-008",
+    "title": "Hurricane",
+    "artist": "I Prevail",
+    "album": "Imported album",
+    "duration": 210,
+    "genre": "Imported",
+    "year": "2026",
+    "coverA": "#3c315f",
+    "coverB": "#d48aa6",
+    "audioUrl": "https://www.youtube.com/watch?v=-7p1LhXqMnc"
+  },
+  {
+    "id": "imported-009",
+    "title": "Every Time You Leave",
+    "artist": "I Prevail · Delaney Jane",
+    "album": "Imported album",
+    "duration": 210,
+    "genre": "Imported",
+    "year": "2026",
+    "coverA": "#5a3c2d",
+    "coverB": "#e4a66d",
+    "audioUrl": "https://www.youtube.com/watch?v=7cpKoLkkg28"
+  },
+  {
+    "id": "imported-010",
+    "title": "I Don't Belong Here",
+    "artist": "I Prevail",
+    "album": "Imported album",
+    "duration": 210,
+    "genre": "Imported",
+    "year": "2026",
+    "coverA": "#1e4e68",
+    "coverB": "#7bafd0",
+    "audioUrl": "https://www.youtube.com/watch?v=WzxF5vD8vgE"
+  },
+  {
+    "id": "imported-011",
+    "title": "Let Me Be Sad",
+    "artist": "I Prevail",
+    "album": "Imported album",
+    "duration": 210,
+    "genre": "Imported",
+    "year": "2026",
+    "coverA": "#394d39",
+    "coverB": "#d8c56a",
+    "audioUrl": "https://www.youtube.com/watch?v=8ju4H6fT-1Q"
+  },
+  {
+    "id": "imported-012",
+    "title": "Pain",
+    "artist": "Three Days Grace",
+    "album": "Imported album",
+    "duration": 210,
+    "genre": "Imported",
+    "year": "2026",
+    "coverA": "#522e3e",
+    "coverB": "#e27e8e",
+    "audioUrl": "https://www.youtube.com/watch?v=h74nkELyHhM"
+  },
+  {
+    "id": "imported-013",
+    "title": "Animal I Have Become",
+    "artist": "Three Days Grace",
+    "album": "Imported album",
+    "duration": 210,
+    "genre": "Imported",
+    "year": "2026",
+    "coverA": "#214a55",
+    "coverB": "#62d4c8",
+    "audioUrl": "https://www.youtube.com/watch?v=ysho2xTWUYo"
+  },
+  {
+    "id": "imported-014",
+    "title": "Riot",
+    "artist": "Three Days Grace",
+    "album": "Imported album",
+    "duration": 210,
+    "genre": "Imported",
+    "year": "2026",
+    "coverA": "#3c315f",
+    "coverB": "#d48aa6",
+    "audioUrl": "https://www.youtube.com/watch?v=IGlg75esXws"
+  },
+  {
+    "id": "imported-015",
+    "title": "Over and Over",
+    "artist": "Three Days Grace",
+    "album": "Imported album",
+    "duration": 210,
+    "genre": "Imported",
+    "year": "2026",
+    "coverA": "#5a3c2d",
+    "coverB": "#e4a66d",
+    "audioUrl": "https://www.youtube.com/watch?v=6hx2Ql_WmZE"
+  },
+  {
+    "id": "imported-016",
+    "title": "Get Out Alive",
+    "artist": "Three Days Grace",
+    "album": "Imported album",
+    "duration": 210,
+    "genre": "Imported",
+    "year": "2026",
+    "coverA": "#1e4e68",
+    "coverB": "#7bafd0",
+    "audioUrl": "https://www.youtube.com/watch?v=eE29TpRjPOE"
+  },
+  {
+    "id": "imported-017",
+    "title": "Paralyzed",
+    "artist": "Solence",
+    "album": "Imported album",
+    "duration": 210,
+    "genre": "Imported",
+    "year": "2026",
+    "coverA": "#394d39",
+    "coverB": "#d8c56a",
+    "audioUrl": "https://www.youtube.com/watch?v=BMKn35lj-xE"
+  },
+  {
+    "id": "imported-018",
+    "title": "Direction",
+    "artist": "Solence",
+    "album": "Imported album",
+    "duration": 210,
+    "genre": "Imported",
+    "year": "2026",
+    "coverA": "#522e3e",
+    "coverB": "#e27e8e",
+    "audioUrl": "https://www.youtube.com/watch?v=evWkTDeI8ak"
+  },
+  {
+    "id": "imported-019",
+    "title": "All of the Pain Must Go",
+    "artist": "Solence",
+    "album": "Imported album",
+    "duration": 210,
+    "genre": "Imported",
+    "year": "2026",
+    "coverA": "#214a55",
+    "coverB": "#62d4c8",
+    "audioUrl": "https://www.youtube.com/watch?v=sGDqumpqA2g"
+  },
+  {
+    "id": "imported-020",
+    "title": "Lost and Broken",
+    "artist": "Beyond Unbroken",
+    "album": "Imported album",
+    "duration": 210,
+    "genre": "Imported",
+    "year": "2026",
+    "coverA": "#3c315f",
+    "coverB": "#d48aa6",
+    "audioUrl": "https://www.youtube.com/watch?v=VlgZ8MQmDvM"
+  },
+  {
+    "id": "imported-021",
+    "title": "Make Believe",
+    "artist": "Memphis May Fire",
+    "album": "Imported album",
+    "duration": 210,
+    "genre": "Imported",
+    "year": "2026",
+    "coverA": "#5a3c2d",
+    "coverB": "#e4a66d",
+    "audioUrl": "https://www.youtube.com/watch?v=rwPODGGwFn0"
+  },
+  {
+    "id": "imported-022",
+    "title": "Somebody",
+    "artist": "Memphis May Fire",
+    "album": "Imported album",
+    "duration": 210,
+    "genre": "Imported",
+    "year": "2026",
+    "coverA": "#1e4e68",
+    "coverB": "#7bafd0",
+    "audioUrl": "https://www.youtube.com/watch?v=mE5h0kxg48A"
+  },
+  {
+    "id": "imported-023",
+    "title": "The Fight Within",
+    "artist": "Memphis May Fire",
+    "album": "Imported album",
+    "duration": 210,
+    "genre": "Imported",
+    "year": "2026",
+    "coverA": "#394d39",
+    "coverB": "#d8c56a",
+    "audioUrl": "https://www.youtube.com/watch?v=Hhy56zXs2Yw"
+  },
+  {
+    "id": "imported-024",
+    "title": "Your Turn",
+    "artist": "Memphis May Fire",
+    "album": "Imported album",
+    "duration": 210,
+    "genre": "Imported",
+    "year": "2026",
+    "coverA": "#522e3e",
+    "coverB": "#e27e8e",
+    "audioUrl": "https://www.youtube.com/watch?v=ivs_TzdIXac"
+  },
+  {
+    "id": "imported-025",
+    "title": "Voices In My Head",
+    "artist": "Falling In Reverse",
+    "album": "Imported album",
+    "duration": 210,
+    "genre": "Imported",
+    "year": "2026",
+    "coverA": "#214a55",
+    "coverB": "#62d4c8",
+    "audioUrl": "https://www.youtube.com/watch?v=o6IIrkfq-MU"
+  },
+  {
+    "id": "imported-026",
+    "title": "Bad Guy (Radio Edit)",
+    "artist": "Falling in Reverse (feat Saraya)",
+    "album": "Imported album",
+    "duration": 210,
+    "genre": "Imported",
+    "year": "2026",
+    "coverA": "#3c315f",
+    "coverB": "#d48aa6",
+    "audioUrl": "https://www.youtube.com/watch?v=GFU-NnPNFEU"
+  },
+  {
+    "id": "imported-027",
+    "title": "Doomsday",
+    "artist": "CANTERVICE",
+    "album": "Imported album",
+    "duration": 210,
+    "genre": "Imported",
+    "year": "2026",
+    "coverA": "#5a3c2d",
+    "coverB": "#e4a66d",
+    "audioUrl": "https://www.youtube.com/watch?v=eiP4ci71i28"
+  },
+  {
+    "id": "imported-028",
+    "title": "Breathe Into Me",
+    "artist": "Red",
+    "album": "Imported album",
+    "duration": 210,
+    "genre": "Imported",
+    "year": "2026",
+    "coverA": "#1e4e68",
+    "coverB": "#7bafd0",
+    "audioUrl": "https://www.youtube.com/watch?v=Q0CRRoDYqOc"
+  },
+  {
+    "id": "imported-029",
+    "title": "Circle The Drain",
+    "artist": "Wage War",
+    "album": "Imported album",
+    "duration": 210,
+    "genre": "Imported",
+    "year": "2026",
+    "coverA": "#394d39",
+    "coverB": "#d8c56a",
+    "audioUrl": "https://www.youtube.com/watch?v=vcE-Emm1heY"
+  },
+  {
+    "id": "imported-030",
+    "title": "Into The Fire",
+    "artist": "Asking Alexandria",
+    "album": "Imported album",
+    "duration": 210,
+    "genre": "Imported",
+    "year": "2026",
+    "coverA": "#522e3e",
+    "coverB": "#e27e8e",
+    "audioUrl": "https://www.youtube.com/watch?v=_EfkEVt_S-k"
+  },
+  {
+    "id": "imported-031",
+    "title": "Chop Suey!",
+    "artist": "System Of A Down",
+    "album": "Imported album",
+    "duration": 210,
+    "genre": "Imported",
+    "year": "2026",
+    "coverA": "#214a55",
+    "coverB": "#62d4c8",
+    "audioUrl": "https://www.youtube.com/watch?v=MlcJQYON2Go"
+  },
+  {
+    "id": "imported-032",
+    "title": "BITTER",
+    "artist": "SCATTERBRAIN",
+    "album": "Imported album",
+    "duration": 210,
+    "genre": "Imported",
+    "year": "2026",
+    "coverA": "#3c315f",
+    "coverB": "#d48aa6",
+    "audioUrl": "https://www.youtube.com/watch?v=pX6mB3U2_Ro"
+  },
+  {
+    "id": "imported-033",
+    "title": "One Of Us",
+    "artist": "Thriller Records · The Word Alive · Bad Omens",
+    "album": "Imported album",
+    "duration": 210,
+    "genre": "Imported",
+    "year": "2026",
+    "coverA": "#5a3c2d",
+    "coverB": "#e4a66d",
+    "audioUrl": "https://www.youtube.com/watch?v=-tWrqzNiORo"
+  },
+  {
+    "id": "imported-034",
+    "title": "Mayday",
+    "artist": "Three Days Grace",
+    "album": "Imported album",
+    "duration": 210,
+    "genre": "Imported",
+    "year": "2026",
+    "coverA": "#1e4e68",
+    "coverB": "#7bafd0",
+    "audioUrl": "https://www.youtube.com/watch?v=AL5BJZBgalY"
+  },
+  {
+    "id": "imported-035",
+    "title": "Sleepwalking",
+    "artist": "All Time Low",
+    "album": "Imported album",
+    "duration": 210,
+    "genre": "Imported",
+    "year": "2026",
+    "coverA": "#394d39",
+    "coverB": "#d8c56a",
+    "audioUrl": "https://www.youtube.com/watch?v=QHO5xZaUhwU"
+  },
+  {
+    "id": "imported-036",
+    "title": "FAST LANE",
+    "artist": "SCATTERBRAIN",
+    "album": "Imported album",
+    "duration": 210,
+    "genre": "Imported",
+    "year": "2026",
+    "coverA": "#522e3e",
+    "coverB": "#e27e8e",
+    "audioUrl": "https://www.youtube.com/watch?v=5Jk7MWCe2cc"
+  },
+  {
+    "id": "imported-037",
+    "title": "After Dark",
+    "artist": "Social Repose",
+    "album": "Imported album",
+    "duration": 210,
+    "genre": "Imported",
+    "year": "2026",
+    "coverA": "#214a55",
+    "coverB": "#62d4c8",
+    "audioUrl": "https://www.youtube.com/watch?v=ug-TLkJdN-k"
+  },
+  {
+    "id": "imported-038",
+    "title": "Danger",
+    "artist": "The Plague",
+    "album": "Imported album",
+    "duration": 210,
+    "genre": "Imported",
+    "year": "2026",
+    "coverA": "#3c315f",
+    "coverB": "#d48aa6",
+    "audioUrl": "https://www.youtube.com/watch?v=1ekDu0VFCYA"
+  },
+  {
+    "id": "imported-039",
+    "title": "I Hate Myself",
+    "artist": "Citizen Soldier",
+    "album": "Imported album",
+    "duration": 210,
+    "genre": "Imported",
+    "year": "2026",
+    "coverA": "#5a3c2d",
+    "coverB": "#e4a66d",
+    "audioUrl": "https://www.youtube.com/watch?v=VsOYjhJgg-E"
+  },
+  {
+    "id": "imported-040",
+    "title": "Devastate",
+    "artist": "Saint Asonia",
+    "album": "Imported album",
+    "duration": 210,
+    "genre": "Imported",
+    "year": "2026",
+    "coverA": "#1e4e68",
+    "coverB": "#7bafd0",
+    "audioUrl": "https://www.youtube.com/watch?v=CuapGYitgGo"
+  },
+  {
+    "id": "imported-041",
+    "title": "Scars",
+    "artist": "I Prevail",
+    "album": "Imported album",
+    "duration": 210,
+    "genre": "Imported",
+    "year": "2026",
+    "coverA": "#394d39",
+    "coverB": "#d8c56a",
+    "audioUrl": "https://www.youtube.com/watch?v=klQk67f1eic"
+  },
+  {
+    "id": "imported-042",
+    "title": "Stuck In Your Head",
+    "artist": "I Prevail",
+    "album": "Imported album",
+    "duration": 210,
+    "genre": "Imported",
+    "year": "2026",
+    "coverA": "#522e3e",
+    "coverB": "#e27e8e",
+    "audioUrl": "https://www.youtube.com/watch?v=x8RWPlQ5PCA"
+  },
+  {
+    "id": "imported-043",
+    "title": "Numb",
+    "artist": "Sleep Theory",
+    "album": "Imported album",
+    "duration": 210,
+    "genre": "Imported",
+    "year": "2026",
+    "coverA": "#214a55",
+    "coverB": "#62d4c8",
+    "audioUrl": "https://www.youtube.com/watch?v=COBENV1izSo"
+  },
+  {
+    "id": "imported-044",
+    "title": "Rx (Medicate)",
+    "artist": "Theory Of A Deadman",
+    "album": "Imported album",
+    "duration": 210,
+    "genre": "Imported",
+    "year": "2026",
+    "coverA": "#3c315f",
+    "coverB": "#d48aa6",
+    "audioUrl": "https://www.youtube.com/watch?v=cpBpTio4JBs"
+  },
+  {
+    "id": "imported-045",
+    "title": "Monsters (feat. blackbear)",
+    "artist": "All Time Low · blackbear",
+    "album": "Imported album",
+    "duration": 210,
+    "genre": "Imported",
+    "year": "2026",
+    "coverA": "#5a3c2d",
+    "coverB": "#e4a66d",
+    "audioUrl": "https://www.youtube.com/watch?v=e4UKtfiX_wM"
+  },
+  {
+    "id": "imported-046",
+    "title": "My Heart I Surrender",
+    "artist": "I Prevail",
+    "album": "Imported album",
+    "duration": 210,
+    "genre": "Imported",
+    "year": "2026",
+    "coverA": "#1e4e68",
+    "coverB": "#7bafd0",
+    "audioUrl": "https://www.youtube.com/watch?v=-HhxH0bOutw"
+  },
+  {
+    "id": "imported-047",
+    "title": "Blank Space",
+    "artist": "I Prevail",
+    "album": "Imported album",
+    "duration": 210,
+    "genre": "Imported",
+    "year": "2026",
+    "coverA": "#394d39",
+    "coverB": "#d8c56a",
+    "audioUrl": "https://www.youtube.com/watch?v=aqyxVayvZzE"
+  },
+  {
+    "id": "imported-048",
+    "title": "Grenade",
+    "artist": "Memphis May Fire",
+    "album": "Imported album",
+    "duration": 210,
+    "genre": "Imported",
+    "year": "2026",
+    "coverA": "#522e3e",
+    "coverB": "#e27e8e",
+    "audioUrl": "https://www.youtube.com/watch?v=Gpl19tR2ASw"
+  },
+  {
+    "id": "imported-049",
+    "title": "Creating Monsters",
+    "artist": "Set It Off",
+    "album": "Imported album",
+    "duration": 210,
+    "genre": "Imported",
+    "year": "2026",
+    "coverA": "#214a55",
+    "coverB": "#62d4c8",
+    "audioUrl": "https://www.youtube.com/watch?v=Hj_zGvlxH3w"
+  },
+  {
+    "id": "imported-050",
+    "title": "Paralyzed",
+    "artist": "Memphis May Fire",
+    "album": "Imported album",
+    "duration": 210,
+    "genre": "Imported",
+    "year": "2026",
+    "coverA": "#3c315f",
+    "coverB": "#d48aa6",
+    "audioUrl": "https://www.youtube.com/watch?v=D45dkwctUPU"
+  },
+  {
+    "id": "imported-051",
+    "title": "Afterglow",
+    "artist": "Smash Into Pieces · Benjamin Jennebo · Chris Adam Sörbye Hedman · Philip Strand",
+    "album": "Imported album",
+    "duration": 210,
+    "genre": "Imported",
+    "year": "2026",
+    "coverA": "#5a3c2d",
+    "coverB": "#e4a66d",
+    "audioUrl": "https://www.youtube.com/watch?v=vWgnw-f3cHk"
+  },
+  {
+    "id": "imported-052",
+    "title": "RUN | Lyrics",
+    "artist": "THE DEFECT",
+    "album": "Imported album",
+    "duration": 210,
+    "genre": "Imported",
+    "year": "2026",
+    "coverA": "#1e4e68",
+    "coverB": "#7bafd0",
+    "audioUrl": "https://www.youtube.com/watch?v=wz8wWBALcv0"
+  },
+  {
+    "id": "imported-053",
+    "title": "Take the Pain Away (feat. Rory Rodriguez)",
+    "artist": "ALESTI · Rory Rodriguez",
+    "album": "Imported album",
+    "duration": 210,
+    "genre": "Imported",
+    "year": "2026",
+    "coverA": "#394d39",
+    "coverB": "#d8c56a",
+    "audioUrl": "https://www.youtube.com/watch?v=6bFPiuIG_Xc"
+  },
+  {
+    "id": "imported-054",
+    "title": "Dissipate (feat. Anxxiety)",
+    "artist": "ALESTI · Anxxiety · Anxxiety",
+    "album": "Imported album",
+    "duration": 210,
+    "genre": "Imported",
+    "year": "2026",
+    "coverA": "#522e3e",
+    "coverB": "#e27e8e",
+    "audioUrl": "https://www.youtube.com/watch?v=QA10ps074vI"
+  },
+  {
+    "id": "imported-055",
+    "title": "Paralyzed (feat. James DeBerg)",
+    "artist": "ALESTI · James DeBerg · James DeBerg · Joey Sturgis",
+    "album": "Imported album",
+    "duration": 210,
+    "genre": "Imported",
+    "year": "2026",
+    "coverA": "#214a55",
+    "coverB": "#62d4c8",
+    "audioUrl": "https://www.youtube.com/watch?v=JlEto9uLYiI"
+  },
+  {
+    "id": "imported-056",
+    "title": "Halo",
+    "artist": "STARSET",
+    "album": "Imported album",
+    "duration": 210,
+    "genre": "Imported",
+    "year": "2026",
+    "coverA": "#3c315f",
+    "coverB": "#d48aa6",
+    "audioUrl": "https://www.youtube.com/watch?v=TYrDI-Aad1s"
+  },
+  {
+    "id": "imported-057",
+    "title": "Better This Way",
+    "artist": "Solence",
+    "album": "Imported album",
+    "duration": 210,
+    "genre": "Imported",
+    "year": "2026",
+    "coverA": "#5a3c2d",
+    "coverB": "#e4a66d",
+    "audioUrl": "https://www.youtube.com/watch?v=PxrGtoM-H94"
+  },
+  {
+    "id": "imported-058",
+    "title": "Claustrophobia",
+    "artist": "Solence",
+    "album": "Imported album",
+    "duration": 210,
+    "genre": "Imported",
+    "year": "2026",
+    "coverA": "#1e4e68",
+    "coverB": "#7bafd0",
+    "audioUrl": "https://www.youtube.com/watch?v=mq_bUEP3qnA"
+  },
+  {
+    "id": "imported-059",
+    "title": "Endless",
+    "artist": "Solence",
+    "album": "Imported album",
+    "duration": 210,
+    "genre": "Imported",
+    "year": "2026",
+    "coverA": "#394d39",
+    "coverB": "#d8c56a",
+    "audioUrl": "https://www.youtube.com/watch?v=TRdDArFF4uE"
+  },
+  {
+    "id": "imported-060",
+    "title": "Fall With Me",
+    "artist": "Ty Trehern · Ty Trehern",
+    "album": "Imported album",
+    "duration": 210,
+    "genre": "Imported",
+    "year": "2026",
+    "coverA": "#522e3e",
+    "coverB": "#e27e8e",
+    "audioUrl": "https://www.youtube.com/watch?v=0PkrfXvb6fA"
+  },
+  {
+    "id": "imported-061",
+    "title": "Zombie",
+    "artist": "Bad Wolves",
+    "album": "Imported album",
+    "duration": 210,
+    "genre": "Imported",
+    "year": "2026",
+    "coverA": "#214a55",
+    "coverB": "#62d4c8",
+    "audioUrl": "https://www.youtube.com/watch?v=GelI814vGR8"
+  },
+  {
+    "id": "imported-062",
+    "title": "A Little Too Late",
+    "artist": "Nate Vickers",
+    "album": "Imported album",
+    "duration": 210,
+    "genre": "Imported",
+    "year": "2026",
+    "coverA": "#3c315f",
+    "coverB": "#d48aa6",
+    "audioUrl": "https://www.youtube.com/watch?v=smnK5LHNrg4"
+  },
+  {
+    "id": "imported-063",
+    "title": "My Demons",
+    "artist": "STARSET",
+    "album": "Imported album",
+    "duration": 210,
+    "genre": "Imported",
+    "year": "2026",
+    "coverA": "#5a3c2d",
+    "coverB": "#e4a66d",
+    "audioUrl": "https://www.youtube.com/watch?v=VrJsdm0WoXU"
+  },
+  {
+    "id": "imported-064",
+    "title": "IF I FALL!",
+    "artist": "Silos · From Ashes to New · Judge & Jury",
+    "album": "Imported album",
+    "duration": 210,
+    "genre": "Imported",
+    "year": "2026",
+    "coverA": "#1e4e68",
+    "coverB": "#7bafd0",
+    "audioUrl": "https://www.youtube.com/watch?v=lcbfGdS17y4"
+  },
+  {
+    "id": "imported-065",
+    "title": "Impossible",
+    "artist": "Silos · Judge & Jury",
+    "album": "Imported album",
+    "duration": 210,
+    "genre": "Imported",
+    "year": "2026",
+    "coverA": "#394d39",
+    "coverB": "#d8c56a",
+    "audioUrl": "https://www.youtube.com/watch?v=vP9dx4XQLrA"
+  },
+  {
+    "id": "imported-066",
+    "title": "guilty",
+    "artist": "elijah",
+    "album": "Imported album",
+    "duration": 210,
+    "genre": "Imported",
+    "year": "2026",
+    "coverA": "#522e3e",
+    "coverB": "#e27e8e",
+    "audioUrl": "https://www.youtube.com/watch?v=hAeLG9TGMrM"
+  },
+  {
+    "id": "imported-067",
+    "title": "There’s Fear In Letting Go",
+    "artist": "I Prevail",
+    "album": "Imported album",
+    "duration": 210,
+    "genre": "Imported",
+    "year": "2026",
+    "coverA": "#214a55",
+    "coverB": "#62d4c8",
+    "audioUrl": "https://www.youtube.com/watch?v=_IjxvYyKF4I"
+  },
+  {
+    "id": "imported-068",
+    "title": "Bad Things",
+    "artist": "I Prevail",
+    "album": "Imported album",
+    "duration": 210,
+    "genre": "Imported",
+    "year": "2026",
+    "coverA": "#3c315f",
+    "coverB": "#d48aa6",
+    "audioUrl": "https://www.youtube.com/watch?v=7Hbb5lwOpjU"
+  },
+  {
+    "id": "imported-069",
+    "title": "Fake",
+    "artist": "I Prevail",
+    "album": "Imported album",
+    "duration": 210,
+    "genre": "Imported",
+    "year": "2026",
+    "coverA": "#5a3c2d",
+    "coverB": "#e4a66d",
+    "audioUrl": "https://www.youtube.com/watch?v=tb7mV7Ucx44"
+  },
+  {
+    "id": "imported-070",
+    "title": "The Negative",
+    "artist": "I Prevail",
+    "album": "Imported album",
+    "duration": 210,
+    "genre": "Imported",
+    "year": "2026",
+    "coverA": "#1e4e68",
+    "coverB": "#7bafd0",
+    "audioUrl": "https://www.youtube.com/watch?v=OD7kK_u1i1g"
+  },
+  {
+    "id": "imported-071",
+    "title": "Deep End",
+    "artist": "I Prevail",
+    "album": "Imported album",
+    "duration": 210,
+    "genre": "Imported",
+    "year": "2026",
+    "coverA": "#394d39",
+    "coverB": "#d8c56a",
+    "audioUrl": "https://www.youtube.com/watch?v=x8xm6YbQaig"
+  },
+  {
+    "id": "imported-072",
+    "title": "Demons",
+    "artist": "Thriller Records · If Not For Me",
+    "album": "Imported album",
+    "duration": 210,
+    "genre": "Imported",
+    "year": "2026",
+    "coverA": "#522e3e",
+    "coverB": "#e27e8e",
+    "audioUrl": "https://www.youtube.com/watch?v=386uqh5y7W0"
+  },
+  {
+    "id": "imported-073",
+    "title": "Pretend My Pain Away",
+    "artist": "Citizen Soldier",
+    "album": "Imported album",
+    "duration": 210,
+    "genre": "Imported",
+    "year": "2026",
+    "coverA": "#214a55",
+    "coverB": "#62d4c8",
+    "audioUrl": "https://www.youtube.com/watch?v=uYLsMhMx0hw"
+  },
+  {
+    "id": "imported-074",
+    "title": "Irreplaceable",
+    "artist": "Citizen Soldier",
+    "album": "Imported album",
+    "duration": 210,
+    "genre": "Imported",
+    "year": "2026",
+    "coverA": "#3c315f",
+    "coverB": "#d48aa6",
+    "audioUrl": "https://www.youtube.com/watch?v=-eWuei-ncgo"
+  },
+  {
+    "id": "imported-075",
+    "title": "Delete Me",
+    "artist": "Shallowsky · Jon Eberhard · Brian Stephens",
+    "album": "Imported album",
+    "duration": 210,
+    "genre": "Imported",
+    "year": "2026",
+    "coverA": "#5a3c2d",
+    "coverB": "#e4a66d",
+    "audioUrl": "https://www.youtube.com/watch?v=0mw4m1UxfSY"
+  },
+  {
+    "id": "imported-076",
+    "title": "Artificial Paradigm",
+    "artist": "Shallowsky · Jon Eberhard · Brian Stephens",
+    "album": "Imported album",
+    "duration": 210,
+    "genre": "Imported",
+    "year": "2026",
+    "coverA": "#1e4e68",
+    "coverB": "#7bafd0",
+    "audioUrl": "https://www.youtube.com/watch?v=A4HYLxsyM2k"
+  },
+  {
+    "id": "imported-077",
+    "title": "Cryptid",
+    "artist": "Shallowsky · Brian Stephens · Jon Eberhard",
+    "album": "Imported album",
+    "duration": 210,
+    "genre": "Imported",
+    "year": "2026",
+    "coverA": "#394d39",
+    "coverB": "#d8c56a",
+    "audioUrl": "https://www.youtube.com/watch?v=TRmvMu7uNfM"
+  },
+  {
+    "id": "imported-078",
+    "title": "DRKPLCS",
+    "artist": "Shallowsky",
+    "album": "Imported album",
+    "duration": 210,
+    "genre": "Imported",
+    "year": "2026",
+    "coverA": "#522e3e",
+    "coverB": "#e27e8e",
+    "audioUrl": "https://www.youtube.com/watch?v=3wxcVGhemmk"
+  },
+  {
+    "id": "imported-079",
+    "title": "The Other Side",
+    "artist": "Memphis May Fire",
+    "album": "Imported album",
+    "duration": 210,
+    "genre": "Imported",
+    "year": "2026",
+    "coverA": "#214a55",
+    "coverB": "#62d4c8",
+    "audioUrl": "https://www.youtube.com/watch?v=kwmLdrQlpyg"
+  },
+  {
+    "id": "imported-080",
+    "title": "Hell Is Empty",
+    "artist": "Memphis May Fire",
+    "album": "Imported album",
+    "duration": 210,
+    "genre": "Imported",
+    "year": "2026",
+    "coverA": "#3c315f",
+    "coverB": "#d48aa6",
+    "audioUrl": "https://www.youtube.com/watch?v=aR015I4zXr4"
+  },
+  {
+    "id": "imported-081",
+    "title": "Infection",
+    "artist": "Memphis May Fire",
+    "album": "Imported album",
+    "duration": 210,
+    "genre": "Imported",
+    "year": "2026",
+    "coverA": "#5a3c2d",
+    "coverB": "#e4a66d",
+    "audioUrl": "https://www.youtube.com/watch?v=5gA9T928VNg"
+  },
+  {
+    "id": "imported-082",
+    "title": "The Resistance",
+    "artist": "Skillet",
+    "album": "Imported album",
+    "duration": 210,
+    "genre": "Imported",
+    "year": "2026",
+    "coverA": "#1e4e68",
+    "coverB": "#7bafd0",
+    "audioUrl": "https://www.youtube.com/watch?v=cGvJbijeYSM"
+  },
+  {
+    "id": "imported-083",
+    "title": "Love Is War",
+    "artist": "Memphis May Fire",
+    "album": "Imported album",
+    "duration": 210,
+    "genre": "Imported",
+    "year": "2026",
+    "coverA": "#394d39",
+    "coverB": "#d8c56a",
+    "audioUrl": "https://www.youtube.com/watch?v=MkYkDk_kwww"
+  },
+  {
+    "id": "imported-084",
+    "title": "Innerspace",
+    "artist": "Soul Extract",
+    "album": "Imported album",
+    "duration": 210,
+    "genre": "Imported",
+    "year": "2026",
+    "coverA": "#522e3e",
+    "coverB": "#e27e8e",
+    "audioUrl": "https://www.youtube.com/watch?v=IHaAhx9FXAE"
+  },
+  {
+    "id": "imported-085",
+    "title": "Six Feet Under",
+    "artist": "Smash Into Pieces · Benjamin Jennebo · Chris Adam Sörbye Hedman · Per Bergqvist · Andreas Lindbergh · Linnea Deb · Joy Deb · Jimmy Joker",
+    "album": "Imported album",
+    "duration": 210,
+    "genre": "Imported",
+    "year": "2026",
+    "coverA": "#214a55",
+    "coverB": "#62d4c8",
+    "audioUrl": "https://www.youtube.com/watch?v=QRgrAEX6sR4"
+  },
+  {
+    "id": "imported-086",
+    "title": "As Above, So Below",
+    "artist": "Essenger · Cryoshell",
+    "album": "Imported album",
+    "duration": 210,
+    "genre": "Imported",
+    "year": "2026",
+    "coverA": "#3c315f",
+    "coverB": "#d48aa6",
+    "audioUrl": "https://www.youtube.com/watch?v=PVxbAiVwF2o"
+  },
+  {
+    "id": "imported-087",
+    "title": "Satellite",
+    "artist": "STARSET",
+    "album": "Imported album",
+    "duration": 210,
+    "genre": "Imported",
+    "year": "2026",
+    "coverA": "#5a3c2d",
+    "coverB": "#e4a66d",
+    "audioUrl": "https://www.youtube.com/watch?v=LyJAoB_OmdE"
+  },
+  {
+    "id": "imported-088",
+    "title": "DIE FOR YOU",
+    "artist": "STARSET",
+    "album": "Imported album",
+    "duration": 210,
+    "genre": "Imported",
+    "year": "2026",
+    "coverA": "#1e4e68",
+    "coverB": "#7bafd0",
+    "audioUrl": "https://www.youtube.com/watch?v=bntcMIMPS5k"
+  },
+  {
+    "id": "imported-089",
+    "title": "Monster",
+    "artist": "STARSET",
+    "album": "Imported album",
+    "duration": 210,
+    "genre": "Imported",
+    "year": "2026",
+    "coverA": "#394d39",
+    "coverB": "#d8c56a",
+    "audioUrl": "https://www.youtube.com/watch?v=dPqixofTN98"
+  },
+  {
+    "id": "imported-090",
+    "title": "Static",
+    "artist": "Sleep Theory",
+    "album": "Imported album",
+    "duration": 210,
+    "genre": "Imported",
+    "year": "2026",
+    "coverA": "#522e3e",
+    "coverB": "#e27e8e",
+    "audioUrl": "https://www.youtube.com/watch?v=nAhaAY34xAo"
+  },
+  {
+    "id": "imported-091",
+    "title": "Isolate",
+    "artist": "Citizen Soldier",
+    "album": "Imported album",
+    "duration": 210,
+    "genre": "Imported",
+    "year": "2026",
+    "coverA": "#214a55",
+    "coverB": "#62d4c8",
+    "audioUrl": "https://www.youtube.com/watch?v=5DqQXa-mDVc"
+  },
+  {
+    "id": "imported-092",
+    "title": "Feel Something (Elusios Edit)",
+    "artist": "Illenium x Excision feat. I Prevail",
+    "album": "Imported album",
+    "duration": 210,
+    "genre": "Imported",
+    "year": "2026",
+    "coverA": "#3c315f",
+    "coverB": "#d48aa6",
+    "audioUrl": "https://www.youtube.com/watch?v=AFPKt4wGVkc"
+  },
+  {
+    "id": "imported-093",
+    "title": "Antidote",
+    "artist": "The Plague",
+    "album": "Imported album",
+    "duration": 210,
+    "genre": "Imported",
+    "year": "2026",
+    "coverA": "#5a3c2d",
+    "coverB": "#e4a66d",
+    "audioUrl": "https://www.youtube.com/watch?v=EGNoIMI5Etw"
+  },
+  {
+    "id": "imported-094",
+    "title": "Break the Cycle",
+    "artist": "Andromida · Beyond Unbroken",
+    "album": "Imported album",
+    "duration": 210,
+    "genre": "Imported",
+    "year": "2026",
+    "coverA": "#1e4e68",
+    "coverB": "#7bafd0",
+    "audioUrl": "https://www.youtube.com/watch?v=pACpFti2BtQ"
+  },
+  {
+    "id": "imported-095",
+    "title": "When The Darkness Comes",
+    "artist": "Jeris Johnson",
+    "album": "Imported album",
+    "duration": 210,
+    "genre": "Imported",
+    "year": "2026",
+    "coverA": "#394d39",
+    "coverB": "#d8c56a",
+    "audioUrl": "https://www.youtube.com/watch?v=9lENBZ5FSPY"
+  },
+  {
+    "id": "imported-096",
+    "title": "Beyond The Stars",
+    "artist": "Evans Blue",
+    "album": "Imported album",
+    "duration": 210,
+    "genre": "Imported",
+    "year": "2026",
+    "coverA": "#522e3e",
+    "coverB": "#e27e8e",
+    "audioUrl": "https://www.youtube.com/watch?v=YYKYZ9kKWJQ"
+  },
+  {
+    "id": "imported-097",
+    "title": "Strong for Somebody Else",
+    "artist": "Citizen Soldier",
+    "album": "Imported album",
+    "duration": 210,
+    "genre": "Imported",
+    "year": "2026",
+    "coverA": "#214a55",
+    "coverB": "#62d4c8",
+    "audioUrl": "https://www.youtube.com/watch?v=o-nq6FiSBSs"
+  },
+  {
+    "id": "imported-098",
+    "title": "My Own Miracle",
+    "artist": "Citizen Soldier",
+    "album": "Imported album",
+    "duration": 210,
+    "genre": "Imported",
+    "year": "2026",
+    "coverA": "#3c315f",
+    "coverB": "#d48aa6",
+    "audioUrl": "https://www.youtube.com/watch?v=9eUl0xbI5f0"
+  },
+  {
+    "id": "imported-099",
+    "title": "Fallout",
+    "artist": "Sleep Theory",
+    "album": "Imported album",
+    "duration": 210,
+    "genre": "Imported",
+    "year": "2026",
+    "coverA": "#5a3c2d",
+    "coverB": "#e4a66d",
+    "audioUrl": "https://www.youtube.com/watch?v=cpL1W30PX9I"
+  },
+  {
+    "id": "imported-100",
+    "title": "Gravity",
+    "artist": "Wage War",
+    "album": "Imported album",
+    "duration": 210,
+    "genre": "Imported",
+    "year": "2026",
+    "coverA": "#1e4e68",
+    "coverB": "#7bafd0",
+    "audioUrl": "https://www.youtube.com/watch?v=JcDnBeeYaXI"
+  },
+  {
+    "id": "imported-101",
+    "title": "Drag the Lake",
+    "artist": "The Amity Affliction",
+    "album": "Imported album",
+    "duration": 210,
+    "genre": "Imported",
+    "year": "2026",
+    "coverA": "#394d39",
+    "coverB": "#d8c56a",
+    "audioUrl": "https://www.youtube.com/watch?v=8ori9NCJkeQ"
+  },
+  {
+    "id": "imported-102",
+    "title": "Awake and Alive",
+    "artist": "Skillet",
+    "album": "Imported album",
+    "duration": 210,
+    "genre": "Imported",
+    "year": "2026",
+    "coverA": "#522e3e",
+    "coverB": "#e27e8e",
+    "audioUrl": "https://www.youtube.com/watch?v=fT2LBOUIdv8"
+  },
+  {
+    "id": "imported-103",
+    "title": "The Diary of Jane (Single Version)",
+    "artist": "Breaking Benjamin",
+    "album": "Imported album",
+    "duration": 210,
+    "genre": "Imported",
+    "year": "2026",
+    "coverA": "#214a55",
+    "coverB": "#62d4c8",
+    "audioUrl": "https://www.youtube.com/watch?v=pcAKbKUBUOQ"
+  },
+  {
+    "id": "imported-104",
+    "title": "Die For You",
+    "artist": "From Ashes to New",
+    "album": "Imported album",
+    "duration": 210,
+    "genre": "Imported",
+    "year": "2026",
+    "coverA": "#3c315f",
+    "coverB": "#d48aa6",
+    "audioUrl": "https://www.youtube.com/watch?v=4XDaaV3ia_w"
+  },
+  {
+    "id": "imported-105",
+    "title": "MELANCHOLIA",
+    "artist": "THE DAY WE LEFT EARTH · Martin Bjerke · Simen Handeland",
+    "album": "Imported album",
+    "duration": 210,
+    "genre": "Imported",
+    "year": "2026",
+    "coverA": "#5a3c2d",
+    "coverB": "#e4a66d",
+    "audioUrl": "https://www.youtube.com/watch?v=3avxiDE8ec4"
+  },
+  {
+    "id": "imported-106",
+    "title": "IF IT DOESN'T HURT",
+    "artist": "NOTHING MORE",
+    "album": "Imported album",
+    "duration": 210,
+    "genre": "Imported",
+    "year": "2026",
+    "coverA": "#1e4e68",
+    "coverB": "#7bafd0",
+    "audioUrl": "https://www.youtube.com/watch?v=NPUYdJTz4ik"
+  },
+  {
+    "id": "imported-107",
+    "title": "FEEL NOTHING (RESET)",
+    "artist": "The Plot In You",
+    "album": "Imported album",
+    "duration": 210,
+    "genre": "Imported",
+    "year": "2026",
+    "coverA": "#394d39",
+    "coverB": "#d8c56a",
+    "audioUrl": "https://www.youtube.com/watch?v=8dKgDnaNdmw"
+  },
+  {
+    "id": "imported-108",
+    "title": "Blasphemy",
+    "artist": "Bring Me The Horizon",
+    "album": "Imported album",
+    "duration": 210,
+    "genre": "Imported",
+    "year": "2026",
+    "coverA": "#522e3e",
+    "coverB": "#e27e8e",
+    "audioUrl": "https://www.youtube.com/watch?v=HYd9B6YvIHM"
+  },
+  {
+    "id": "imported-109",
+    "title": "Follow You",
+    "artist": "Bring Me The Horizon",
+    "album": "Imported album",
+    "duration": 210,
+    "genre": "Imported",
+    "year": "2026",
+    "coverA": "#214a55",
+    "coverB": "#62d4c8",
+    "audioUrl": "https://www.youtube.com/watch?v=RqQKhSzThyc"
+  },
+  {
+    "id": "imported-110",
+    "title": "Thank You for Hating Me",
+    "artist": "Citizen Soldier",
+    "album": "Imported album",
+    "duration": 210,
+    "genre": "Imported",
+    "year": "2026",
+    "coverA": "#3c315f",
+    "coverB": "#d48aa6",
+    "audioUrl": "https://www.youtube.com/watch?v=ByTn7ZRhDmI"
+  },
+  {
+    "id": "imported-111",
+    "title": "Psycho In My Head",
+    "artist": "Skillet",
+    "album": "Imported album",
+    "duration": 210,
+    "genre": "Imported",
+    "year": "2026",
+    "coverA": "#5a3c2d",
+    "coverB": "#e4a66d",
+    "audioUrl": "https://www.youtube.com/watch?v=e7H0sC41T04"
+  },
+  {
+    "id": "imported-112",
+    "title": "On My Own",
+    "artist": "Ashes Remain · Joshua Smith · Ryan Nalepa · Benjamin Kirk · Jonathan Hively · Robert Tahan · Seth Mosley",
+    "album": "Imported album",
+    "duration": 210,
+    "genre": "Imported",
+    "year": "2026",
+    "coverA": "#1e4e68",
+    "coverB": "#7bafd0",
+    "audioUrl": "https://www.youtube.com/watch?v=TyUQiNmNug0"
+  },
+  {
+    "id": "imported-113",
+    "title": "End of Me",
+    "artist": "Ashes Remain · Joshua Smith · Ryan Nalepa · Benjamin Kirk · Jonathan Hively · Robert Tahan · Brian Hitt",
+    "album": "Imported album",
+    "duration": 210,
+    "genre": "Imported",
+    "year": "2026",
+    "coverA": "#394d39",
+    "coverB": "#d8c56a",
+    "audioUrl": "https://www.youtube.com/watch?v=riM8Hy75oq0"
+  },
+  {
+    "id": "imported-114",
+    "title": "Trigger Warning",
+    "artist": "Falling In Reverse",
+    "album": "Imported album",
+    "duration": 210,
+    "genre": "Imported",
+    "year": "2026",
+    "coverA": "#522e3e",
+    "coverB": "#e27e8e",
+    "audioUrl": "https://www.youtube.com/watch?v=yrlXA0T6w1U"
+  },
+  {
+    "id": "imported-115",
+    "title": "What I've Done",
+    "artist": "Linkin Park",
+    "album": "Imported album",
+    "duration": 210,
+    "genre": "Imported",
+    "year": "2026",
+    "coverA": "#214a55",
+    "coverB": "#62d4c8",
+    "audioUrl": "https://www.youtube.com/watch?v=UzjltM2qv_0"
+  },
+  {
+    "id": "imported-116",
+    "title": "Throne (Audio)",
+    "artist": "Bring Me The Horizon",
+    "album": "Imported album",
+    "duration": 210,
+    "genre": "Imported",
+    "year": "2026",
+    "coverA": "#3c315f",
+    "coverB": "#d48aa6",
+    "audioUrl": "https://www.youtube.com/watch?v=XEp3GTVuShw"
+  },
+  {
+    "id": "imported-117",
+    "title": "we are empire starset no scream edit endfield",
+    "artist": "Unknown artist",
+    "album": "Imported album",
+    "duration": 210,
+    "genre": "Imported",
+    "year": "2026",
+    "coverA": "#5a3c2d",
+    "coverB": "#e4a66d",
+    "audioUrl": "https://www.youtube.com/watch?v=ea-bl1EFRW4"
+  },
+  {
+    "id": "imported-118",
+    "title": "Shimmering Scars",
+    "artist": "Muse",
+    "album": "Imported album",
+    "duration": 210,
+    "genre": "Imported",
+    "year": "2026",
+    "coverA": "#1e4e68",
+    "coverB": "#7bafd0",
+    "audioUrl": "https://www.youtube.com/watch?v=-c2izwGXFMU"
+  },
+  {
+    "id": "imported-119",
+    "title": "Produce/Record/Musical Composition by: Monte Bryan Money & Michael Norman Money · BU Records - Falling Down + Heathens",
+    "artist": "Beyond Unbroken · BU Recording Studios",
+    "album": "Imported album",
+    "duration": 210,
+    "genre": "Imported",
+    "year": "2026",
+    "coverA": "#394d39",
+    "coverB": "#d8c56a",
+    "audioUrl": "https://www.youtube.com/watch?v=hw2daJSBLnU"
+  },
+  {
+    "id": "imported-120",
+    "title": "The Ledge",
+    "artist": "ENMY",
+    "album": "Imported album",
+    "duration": 210,
+    "genre": "Imported",
+    "year": "2026",
+    "coverA": "#522e3e",
+    "coverB": "#e27e8e",
+    "audioUrl": "https://www.youtube.com/watch?v=OENe8sglt0E"
+  },
+  {
+    "id": "imported-121",
+    "title": "Our Demise",
+    "artist": "ENMY",
+    "album": "Imported album",
+    "duration": 210,
+    "genre": "Imported",
+    "year": "2026",
+    "coverA": "#214a55",
+    "coverB": "#62d4c8",
+    "audioUrl": "https://www.youtube.com/watch?v=kPEFrPOgyIY"
+  },
+  {
+    "id": "imported-122",
+    "title": "Survive",
+    "artist": "ENMY",
+    "album": "Imported album",
+    "duration": 210,
+    "genre": "Imported",
+    "year": "2026",
+    "coverA": "#3c315f",
+    "coverB": "#d48aa6",
+    "audioUrl": "https://www.youtube.com/watch?v=p6ZO5k_Ppk8"
+  },
+  {
+    "id": "imported-123",
+    "title": "Hourglass",
+    "artist": "ENMY",
+    "album": "Imported album",
+    "duration": 210,
+    "genre": "Imported",
+    "year": "2026",
+    "coverA": "#5a3c2d",
+    "coverB": "#e4a66d",
+    "audioUrl": "https://www.youtube.com/watch?v=8uIOiVsz06s"
+  },
+  {
+    "id": "imported-124",
+    "title": "On the Edge",
+    "artist": "ENMY",
+    "album": "Imported album",
+    "duration": 210,
+    "genre": "Imported",
+    "year": "2026",
+    "coverA": "#1e4e68",
+    "coverB": "#7bafd0",
+    "audioUrl": "https://www.youtube.com/watch?v=VhVsSigGr9U"
+  },
+  {
+    "id": "imported-125",
+    "title": "Silver Bullet",
+    "artist": "ENMY",
+    "album": "Imported album",
+    "duration": 210,
+    "genre": "Imported",
+    "year": "2026",
+    "coverA": "#394d39",
+    "coverB": "#d8c56a",
+    "audioUrl": "https://www.youtube.com/watch?v=ARgS5QA0jqk"
+  },
+  {
+    "id": "imported-126",
+    "title": "The Cure",
+    "artist": "ENMY",
+    "album": "Imported album",
+    "duration": 210,
+    "genre": "Imported",
+    "year": "2026",
+    "coverA": "#522e3e",
+    "coverB": "#e27e8e",
+    "audioUrl": "https://www.youtube.com/watch?v=8FzEKuB2OqM"
+  },
+  {
+    "id": "imported-127",
+    "title": "Half-Life",
+    "artist": "Essenger",
+    "album": "Imported album",
+    "duration": 210,
+    "genre": "Imported",
+    "year": "2026",
+    "coverA": "#214a55",
+    "coverB": "#62d4c8",
+    "audioUrl": "https://www.youtube.com/watch?v=bpTsEFYjkr0"
+  }
 ];
-
-const parseTrack = (row: string, index: number): TrackSeed => {
-  const spacedSeparator = row.indexOf(' - ');
-  const compactSeparator = row.indexOf('-');
-  const colonSeparator = row.indexOf(':');
-  const separator = spacedSeparator >= 0 ? spacedSeparator : compactSeparator >= 0 ? compactSeparator : colonSeparator;
-  const artist = separator > 0 ? row.slice(0, separator).trim() : 'Unknown artist';
-  const title = separator > 0 ? row.slice(separator + (spacedSeparator === separator ? 3 : colonSeparator === separator ? 1 : 1)).trim() : row.trim();
-  const [coverA, coverB] = coverPairs[index % coverPairs.length];
-
-  return {
-    id: `requested-${String(index + 1).padStart(3, '0')}`,
-    title,
-    artist,
-    album: 'Placeholder album',
-    duration: 210 + (index % 105),
-    genre: 'Imported list',
-    year: '2026',
-    coverA,
-    coverB,
-  };
-};
-
-export const requestedSongSeeds: TrackSeed[] = [];
