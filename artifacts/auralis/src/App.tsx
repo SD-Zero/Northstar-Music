@@ -128,7 +128,7 @@ function App() {
   const [activePlaylist, setActivePlaylist] = useState('p1');
   const [currentId, setCurrentId] = useState('s1');
   const [isPlaying, setIsPlaying] = useState(false);
-  const [progress, setProgress] = useState(38);
+  const [progress, setProgress] = useState(0);
   const [libraryOpen, setLibraryOpen] = useState(false);
   const [libraryView, setLibraryView] = useState<LibraryView>('library');
   const [query, setQuery] = useState('');
@@ -161,6 +161,7 @@ function App() {
   const dragRef = useRef<{ id: string; pointerId: number; moved: boolean } | null>(null);
   const suppressClickRef = useRef(false);
   const youtubePlayerRef = useRef<HTMLIFrameElement>(null);
+  const progressRef = useRef(0);
 
   const current = localSongs.find((song) => song.id === currentId) || localSongs[0];
   const active = playlists.find((playlist) => playlist.id === activePlaylist) || playlists[0];
@@ -186,11 +187,50 @@ function App() {
     }), '*');
   };
 
+  useEffect(() => { progressRef.current = progress; }, [progress]);
   useEffect(() => { localStorage.setItem('auralis-playlists', JSON.stringify(playlists)); }, [playlists]);
   useEffect(() => { localStorage.setItem('auralis-songs', JSON.stringify(localSongs)); }, [localSongs]);
   useEffect(() => {
+    setProgress(0);
+  }, [currentId]);
+  useEffect(() => {
     if (!currentYoutubeId) return;
     sendYoutubeCommand(isPlaying ? 'loadVideoById' : 'cueVideoById', [currentYoutubeId]);
+  }, [currentYoutubeId]);
+  useEffect(() => {
+    if (!currentYoutubeId) return;
+    const iframe = youtubePlayerRef.current;
+    const handleYoutubeMessage = (event: MessageEvent) => {
+      if (event.source !== iframe?.contentWindow) return;
+      let message: { event?: string; info?: { currentTime?: number; duration?: number; playerState?: number } };
+      try {
+        message = typeof event.data === 'string' ? JSON.parse(event.data) : event.data;
+      } catch {
+        return;
+      }
+      if (message?.event !== 'infoDelivery' || !message.info) return;
+      const { currentTime, playerState } = message.info;
+      if (typeof currentTime === 'number' && Number.isFinite(currentTime)) {
+        setProgress(Math.max(0, Math.min(current?.duration || currentTime, currentTime)));
+      }
+      if (playerState === 1) setIsPlaying(true);
+      if (playerState === 2) setIsPlaying(false);
+    };
+    const announceYoutubeSession = () => {
+      iframe?.contentWindow?.postMessage(JSON.stringify({
+        event: 'listening',
+        id: 'auralis-youtube',
+        channel: 'auralis',
+      }), '*');
+      sendYoutubeCommand('addEventListener', ['onStateChange']);
+    };
+    window.addEventListener('message', handleYoutubeMessage);
+    announceYoutubeSession();
+    const retry = window.setTimeout(announceYoutubeSession, 500);
+    return () => {
+      window.removeEventListener('message', handleYoutubeMessage);
+      window.clearTimeout(retry);
+    };
   }, [currentYoutubeId]);
   useEffect(() => {
     if (!currentYoutubeId) return;
@@ -204,6 +244,15 @@ function App() {
       album: current.album,
     });
     navigator.mediaSession.playbackState = isPlaying ? 'playing' : 'paused';
+    try {
+      navigator.mediaSession.setPositionState({
+        duration: Math.max(1, current.duration),
+        playbackRate: 1,
+        position: Math.max(0, Math.min(current.duration, progress)),
+      });
+    } catch {
+      // Older Safari versions may not implement position state.
+    }
 
     const seekTo = (seconds: number) => {
       const nextProgress = Math.max(0, Math.min(current.duration, seconds));
@@ -221,8 +270,8 @@ function App() {
     setAction('pause', () => setIsPlaying(false));
     setAction('previoustrack', () => previous && chooseSong(previous));
     setAction('nexttrack', () => next && chooseSong(next));
-    setAction('seekbackward', (details) => seekTo(progress - (details.seekOffset || 10)));
-    setAction('seekforward', (details) => seekTo(progress + (details.seekOffset || 10)));
+    setAction('seekbackward', (details) => seekTo(progressRef.current - (details.seekOffset || 10)));
+    setAction('seekforward', (details) => seekTo(progressRef.current + (details.seekOffset || 10)));
     setAction('seekto', (details) => seekTo(details.seekTime ?? 0));
 
     return () => {
