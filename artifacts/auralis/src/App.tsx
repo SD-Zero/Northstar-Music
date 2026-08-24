@@ -215,6 +215,11 @@ function App() {
       }
       if (playerState === 1) setIsPlaying(true);
       if (playerState === 2) setIsPlaying(false);
+      if (playerState === 0) {
+        if (repeat && current) chooseSong(current);
+        else if (next) chooseSong(next);
+        else setIsPlaying(false);
+      }
     };
     const announceYoutubeSession = () => {
       iframe?.contentWindow?.postMessage(JSON.stringify({
@@ -255,6 +260,10 @@ function App() {
     }
 
     const seekTo = (seconds: number) => {
+      if (seconds >= current.duration - 1 && next) {
+        chooseSong(next);
+        return;
+      }
       const nextProgress = Math.max(0, Math.min(current.duration, seconds));
       setProgress(nextProgress);
       sendYoutubeCommand('seekTo', [nextProgress, true]);
