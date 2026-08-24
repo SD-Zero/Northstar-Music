@@ -197,6 +197,46 @@ function App() {
     sendYoutubeCommand(isPlaying ? 'playVideo' : 'pauseVideo');
   }, [isPlaying, currentYoutubeId]);
   useEffect(() => {
+    if (!current || !('mediaSession' in navigator)) return;
+    navigator.mediaSession.metadata = new MediaMetadata({
+      title: current.title,
+      artist: current.artist,
+      album: current.album,
+    });
+    navigator.mediaSession.playbackState = isPlaying ? 'playing' : 'paused';
+
+    const seekTo = (seconds: number) => {
+      const nextProgress = Math.max(0, Math.min(current.duration, seconds));
+      setProgress(nextProgress);
+      sendYoutubeCommand('seekTo', [nextProgress, true]);
+    };
+    const setAction = (action: MediaSessionAction, handler: (details: MediaSessionActionDetails) => void) => {
+      try {
+        navigator.mediaSession.setActionHandler(action, handler);
+      } catch {
+        // Some browsers do not support every Media Session action.
+      }
+    };
+    setAction('play', () => setIsPlaying(true));
+    setAction('pause', () => setIsPlaying(false));
+    setAction('previoustrack', () => previous && chooseSong(previous));
+    setAction('nexttrack', () => next && chooseSong(next));
+    setAction('seekbackward', (details) => seekTo(progress - (details.seekOffset || 10)));
+    setAction('seekforward', (details) => seekTo(progress + (details.seekOffset || 10)));
+    setAction('seekto', (details) => seekTo(details.seekTime ?? 0));
+
+    return () => {
+      const actions: MediaSessionAction[] = ['play', 'pause', 'previoustrack', 'nexttrack', 'seekbackward', 'seekforward', 'seekto'];
+      actions.forEach((action) => {
+        try {
+          navigator.mediaSession.setActionHandler(action, null);
+        } catch {
+          // Some browsers do not support every Media Session action.
+        }
+      });
+    };
+  }, [current, isPlaying, next, previous, progress]);
+  useEffect(() => {
     if (!isPlaying || !current) return;
     const timer = window.setInterval(() => setProgress((value) => {
        if (value >= current.duration) {
