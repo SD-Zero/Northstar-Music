@@ -39,7 +39,7 @@ jobs:
       - name: Build Auralis
         working-directory: artifacts/auralis
         env:
-          BASE_PATH: /Northstar-Music/
+          BASE_PATH: /NSM/
           PORT: 4173
           NODE_ENV: production
         run: pnpm run build
