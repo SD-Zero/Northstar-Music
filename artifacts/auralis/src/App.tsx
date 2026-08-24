@@ -183,7 +183,7 @@ function App() {
       event: 'command',
       func,
       args,
-    }), 'https://www.youtube-nocookie.com');
+    }), '*');
   };
 
   useEffect(() => { localStorage.setItem('auralis-playlists', JSON.stringify(playlists)); }, [playlists]);
