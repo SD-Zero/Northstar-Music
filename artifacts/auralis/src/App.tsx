@@ -25,6 +25,21 @@ const initialPlaylists: Playlist[] = [
 
 const queryClient = new QueryClient();
 const formatTime = (seconds: number) => `${Math.floor(seconds / 60)}:${String(Math.floor(seconds % 60)).padStart(2, '0')}`;
+const youtubeVideoId = (url?: string) => {
+  if (!url) return null;
+  try {
+    const parsed = new URL(url);
+    if (parsed.hostname === 'youtu.be') return parsed.pathname.slice(1) || null;
+    if (parsed.hostname.endsWith('youtube.com')) {
+      if (parsed.pathname === '/watch') return parsed.searchParams.get('v');
+      if (parsed.pathname.startsWith('/embed/')) return parsed.pathname.split('/')[2] || null;
+      if (parsed.pathname.startsWith('/shorts/')) return parsed.pathname.split('/')[2] || null;
+    }
+  } catch {
+    return null;
+  }
+  return null;
+};
 const readStorage = <T,>(key: string, fallback: T): T => {
   try {
     const stored = localStorage.getItem(key);
@@ -145,6 +160,7 @@ function App() {
   const editCoverRef = useRef<HTMLInputElement>(null);
   const dragRef = useRef<{ id: string; pointerId: number; moved: boolean } | null>(null);
   const suppressClickRef = useRef(false);
+  const youtubePlayerRef = useRef<HTMLIFrameElement>(null);
 
   const current = localSongs.find((song) => song.id === currentId) || localSongs[0];
   const active = playlists.find((playlist) => playlist.id === activePlaylist) || playlists[0];
@@ -161,9 +177,25 @@ function App() {
   const currentIndex = Math.max(0, queue.findIndex((song) => song.id === current?.id));
   const previous = currentIndex > 0 ? queue[currentIndex - 1] : undefined;
   const next = currentIndex < queue.length - 1 ? queue[currentIndex + 1] : undefined;
+  const currentYoutubeId = youtubeVideoId(current?.audioUrl);
+  const sendYoutubeCommand = (func: string, args: unknown[] = []) => {
+    youtubePlayerRef.current?.contentWindow?.postMessage(JSON.stringify({
+      event: 'command',
+      func,
+      args,
+    }), 'https://www.youtube-nocookie.com');
+  };
 
   useEffect(() => { localStorage.setItem('auralis-playlists', JSON.stringify(playlists)); }, [playlists]);
   useEffect(() => { localStorage.setItem('auralis-songs', JSON.stringify(localSongs)); }, [localSongs]);
+  useEffect(() => {
+    if (!currentYoutubeId) return;
+    sendYoutubeCommand(isPlaying ? 'loadVideoById' : 'cueVideoById', [currentYoutubeId]);
+  }, [currentYoutubeId]);
+  useEffect(() => {
+    if (!currentYoutubeId) return;
+    sendYoutubeCommand(isPlaying ? 'playVideo' : 'pauseVideo');
+  }, [isPlaying, currentYoutubeId]);
   useEffect(() => {
     if (!isPlaying || !current) return;
     const timer = window.setInterval(() => setProgress((value) => {
@@ -358,6 +390,16 @@ function App() {
 
   return (
     <div className="auralis-shell">
+      {currentYoutubeId && <iframe
+        ref={youtubePlayerRef}
+        title="YouTube audio player"
+        src={`https://www.youtube-nocookie.com/embed/${currentYoutubeId}?enablejsapi=1&playsinline=1&controls=0&rel=0&modestbranding=1`}
+        onLoad={() => {
+          sendYoutubeCommand(isPlaying ? 'loadVideoById' : 'cueVideoById', [currentYoutubeId]);
+        }}
+        allow="autoplay; encrypted-media"
+        className="pointer-events-none fixed bottom-0 left-0 h-px w-px opacity-0"
+      />}
       <div className="ambient-orb pointer-events-none absolute -top-32 right-[12%] h-[28rem] w-[28rem] rounded-full bg-teal-300/[.08] blur-3xl" />
       <div className="ambient-orb pointer-events-none absolute bottom-[-16rem] left-[-8rem] h-[34rem] w-[34rem] rounded-full bg-amber-300/[.05] blur-3xl" />
       <header className="relative z-10 flex items-center justify-between px-5 py-5 md:px-10 md:py-7">
