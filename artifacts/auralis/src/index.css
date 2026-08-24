@@ -151,6 +151,23 @@ button:focus-visible, input:focus-visible { outline: 2px solid hsl(var(--primary
 .rise-in { animation: rise .65s cubic-bezier(.2,.8,.2,1) both; }
 .delay-1 { animation-delay: .08s; } .delay-2 { animation-delay: .16s; } .delay-3 { animation-delay: .24s; }
 input[type="range"] { accent-color: hsl(var(--primary)); }
+input[type="range"]::-webkit-slider-thumb {
+  appearance: none;
+  width: 16px;
+  height: 16px;
+  border: 2px solid hsl(var(--primary));
+  border-radius: 999px;
+  background: rgba(8, 25, 29, .78);
+  box-shadow: 0 0 0 3px rgba(54, 214, 195, .12);
+}
+input[type="range"]::-moz-range-thumb {
+  width: 16px;
+  height: 16px;
+  border: 2px solid hsl(var(--primary));
+  border-radius: 999px;
+  background: rgba(8, 25, 29, .78);
+  box-shadow: 0 0 0 3px rgba(54, 214, 195, .12);
+}
 @media (max-width: 767px) {
   .auralis-shell { overflow: auto; }
 }
